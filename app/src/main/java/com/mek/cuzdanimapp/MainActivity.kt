@@ -4,44 +4,43 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import com.mek.cuzdanimapp.data.local.TokenManager
+import com.mek.cuzdanimapp.presentation.navigation.AppNavGraph
+import com.mek.cuzdanimapp.presentation.navigation.LoginRoute
+import com.mek.cuzdanimapp.presentation.navigation.NavigationState
 import com.mek.cuzdanimapp.ui.theme.CuzdanimAppTheme
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CuzdanimAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navState = remember { mutableStateOf<NavigationState?>(null) }
+
+                LaunchedEffect(Unit) {
+                    tokenManager.logoutEvent.collect {
+                        navState.value?.let { state ->
+                            state.backStacks.values.forEach { it.clear() }
+                            state.topLevelRoute = LoginRoute
+                        }
+                    }
                 }
+
+                AppNavGraph(
+                    onNavStateReady = { navState.value = it }
+                )
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CuzdanimAppTheme {
-        Greeting("Android")
     }
 }
