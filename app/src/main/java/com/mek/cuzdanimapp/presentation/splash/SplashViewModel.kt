@@ -3,7 +3,7 @@ package com.mek.cuzdanimapp.presentation.splash
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.data.local.TokenManager
-import com.mek.cuzdanimapp.domain.usecase.RefreshTokenUseCase
+import com.mek.cuzdanimapp.domain.usecase.auth.RefreshTokenUseCase
 import com.mek.cuzdanimapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -33,7 +33,7 @@ class SplashViewModel @Inject constructor(
                 return@launch
             }
 
-            when (val result = refreshTokenUseCase(refreshToken)) {
+            when (refreshTokenUseCase(refreshToken)) {
                 is Resource.Success -> {
                     _effect.send(SplashEffect.NavigateToDashboard)
                 }
