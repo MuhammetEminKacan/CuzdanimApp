@@ -2,6 +2,8 @@ package com.mek.cuzdanimapp.di
 
 import com.mek.cuzdanimapp.BuildConfig
 import com.mek.cuzdanimapp.data.remote.AuthApi
+import com.mek.cuzdanimapp.data.remote.DashboardApi
+import com.mek.cuzdanimapp.data.remote.TransactionApi
 import com.mek.cuzdanimapp.data.remote.interceptor.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -89,5 +91,17 @@ object NetworkModule {
         @Named("refreshRetrofit") retrofit: Retrofit
     ): AuthApi {
         return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideDashboardApi(retrofit: Retrofit): DashboardApi {
+        return retrofit.create(DashboardApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransactionApi(retrofit: Retrofit): TransactionApi {
+        return retrofit.create(TransactionApi::class.java)
     }
 }

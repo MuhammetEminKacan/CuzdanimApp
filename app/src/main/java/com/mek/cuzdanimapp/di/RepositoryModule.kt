@@ -1,7 +1,11 @@
 package com.mek.cuzdanimapp.di
 
 import com.mek.cuzdanimapp.data.repository.AuthRepositoryImpl
+import com.mek.cuzdanimapp.data.repository.DashboardRepositoryImpl
+import com.mek.cuzdanimapp.data.repository.TransactionRepositoryImpl
 import com.mek.cuzdanimapp.domain.repository.AuthRepository
+import com.mek.cuzdanimapp.domain.repository.DashboardRepository
+import com.mek.cuzdanimapp.domain.repository.TransactionRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +21,16 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDashboardRepository(
+        dashboardRepositoryImpl: DashboardRepositoryImpl
+    ): DashboardRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTransactionRepository(
+        transactionRepositoryImpl: TransactionRepositoryImpl
+    ): TransactionRepository
 }

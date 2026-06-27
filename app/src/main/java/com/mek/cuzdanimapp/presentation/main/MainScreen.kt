@@ -3,6 +3,11 @@ package com.mek.cuzdanimapp.presentation.main
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -12,6 +17,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import com.mek.cuzdanimapp.presentation.navigation.bottomNavItems
 
@@ -19,13 +25,14 @@ import com.mek.cuzdanimapp.presentation.navigation.bottomNavItems
 fun MainScreen(
     currentRoute: NavKey,
     onNavigate: (NavKey) -> Unit,
+    onAddTransaction: () -> Unit,
     content: @Composable () -> Unit
 ) {
     Scaffold(
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = androidx.compose.ui.unit.Dp(0f)
+                tonalElevation = 0.dp
             ) {
                 bottomNavItems.forEach { item ->
                     NavigationBarItem(
@@ -53,7 +60,21 @@ fun MainScreen(
                     )
                 }
             }
-        }
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddTransaction,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "İşlem Ekle"
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
     ) { paddingValues ->
         Box(
             modifier = Modifier

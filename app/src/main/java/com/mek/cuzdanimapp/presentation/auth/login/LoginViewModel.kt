@@ -2,7 +2,7 @@ package com.mek.cuzdanimapp.presentation.auth.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mek.cuzdanimapp.domain.usecase.LoginUseCase
+import com.mek.cuzdanimapp.domain.usecase.auth.LoginUseCase
 import com.mek.cuzdanimapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel

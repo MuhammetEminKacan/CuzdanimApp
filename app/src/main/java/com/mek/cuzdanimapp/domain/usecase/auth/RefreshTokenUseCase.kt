@@ -1,4 +1,4 @@
-package com.mek.cuzdanimapp.domain.usecase
+package com.mek.cuzdanimapp.domain.usecase.auth
 
 import com.mek.cuzdanimapp.domain.model.AuthResult
 import com.mek.cuzdanimapp.domain.repository.AuthRepository

@@ -20,5 +20,3 @@ val bottomNavItems = listOf(
     BottomNavItem(BudgetRoute, "Bütçe", Icons.Default.PieChart),
     BottomNavItem(ProfileRoute, "Profil", Icons.Default.AccountCircle)
 )
-
-val bottomNavRoutes = setOf(DashboardRoute, TransactionsRoute, BudgetRoute, ProfileRoute)
