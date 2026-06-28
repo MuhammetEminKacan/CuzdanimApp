@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "407224487248",
-    "project_id": "cuzdanimapp-64054",
-    "storage_bucket": "cuzdanimapp-64054.firebasestorage.app"
+    "project_number": "945091578279",
+    "project_id": "cuzdanimapp-dbb6f",
+    "storage_bucket": "cuzdanimapp-dbb6f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:407224487248:android:d2da188183e9e129497055",
+        "mobilesdk_app_id": "1:945091578279:android:2ca49b679a389045574e82",
         "android_client_info": {
           "package_name": "com.mek.cuzdanimapp"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCB17iPE-C7JSfA1vDKn51Y0gW6GP0fhRU"
+          "current_key": "AIzaSyAWBTFMEW28pjfKyPoqe9jZ5irDmj9QYUQ"
         }
       ],
       "services": {
