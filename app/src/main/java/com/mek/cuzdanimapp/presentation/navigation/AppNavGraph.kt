@@ -20,6 +20,8 @@ import com.mek.cuzdanimapp.presentation.main.AddTransactionSheetEvent
 import com.mek.cuzdanimapp.presentation.main.AddTransactionViewModel
 import com.mek.cuzdanimapp.presentation.main.MainScreen
 import com.mek.cuzdanimapp.presentation.profile.ProfileScreen
+import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentViewModel
+import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentsScreen
 import com.mek.cuzdanimapp.presentation.splash.SplashScreen
 import com.mek.cuzdanimapp.presentation.splash.SplashViewModel
 import com.mek.cuzdanimapp.presentation.transaction.TransactionEvent
@@ -34,7 +36,7 @@ fun AppNavGraph(
         startRoute = SplashRoute,
         topLevelRoutes = setOf(
             SplashRoute, LoginRoute, RegisterRoute,
-            DashboardRoute, TransactionsRoute, BudgetRoute, ProfileRoute
+            DashboardRoute, TransactionsRoute, RecurringRoute, BudgetRoute, ProfileRoute
         )
     )
 
@@ -130,6 +132,19 @@ fun AppNavGraph(
                     }
                 ) {
                     ProfileScreen()
+                }
+            }
+
+            is RecurringRoute -> NavEntry(route) {
+                val viewModel: RecurringPaymentViewModel = viewModel()
+                MainScreen(
+                    currentRoute = navState.topLevelRoute,
+                    onNavigate = { navigator.navigate(it) },
+                    onAddTransaction = {
+                        addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
+                    }
+                ) {
+                    RecurringPaymentsScreen(viewModel = viewModel)
                 }
             }
             else -> NavEntry(route) { Text("Bilinmeyen ekran") }

@@ -13,3 +13,5 @@ import kotlinx.serialization.Serializable
 @Serializable data object TransactionsRoute : NavKey
 @Serializable data object BudgetRoute : NavKey
 @Serializable data object ProfileRoute : NavKey
+
+@Serializable data object RecurringRoute : NavKey
