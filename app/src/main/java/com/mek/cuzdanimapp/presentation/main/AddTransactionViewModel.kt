@@ -2,6 +2,7 @@ package com.mek.cuzdanimapp.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mek.cuzdanimapp.domain.usecase.recurring.CreateRecurringPaymentUseCase
 import com.mek.cuzdanimapp.domain.usecase.transaction.CreateTransactionUseCase
 import com.mek.cuzdanimapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
-    private val createTransactionUseCase: CreateTransactionUseCase
+    private val createTransactionUseCase: CreateTransactionUseCase,
+    private val createRecurringPaymentUseCase: CreateRecurringPaymentUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddTransactionSheetState())
@@ -52,6 +54,12 @@ class AddTransactionViewModel @Inject constructor(
             is AddTransactionSheetEvent.DateChanged -> {
                 _state.update { it.copy(transactionDate = event.date) }
             }
+            is AddTransactionSheetEvent.ToggleRecurring -> {
+                _state.update { it.copy(isRecurring = !it.isRecurring) }
+            }
+            is AddTransactionSheetEvent.FrequencyChanged -> {
+                _state.update { it.copy(frequency = event.frequency) }
+            }
             is AddTransactionSheetEvent.SaveClicked -> save()
         }
     }
@@ -73,20 +81,39 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            when (val result = createTransactionUseCase(
-                type = state.selectedType,
-                category = state.selectedCategory,
-                amount = amount,
-                description = state.description.ifBlank { null },
-                transactionDate = state.transactionDate
-            )) {
+            val result = if (state.isRecurring) {
+                val title = state.description.ifBlank {
+                    categoryDisplayName(state.selectedCategory)
+                }
+                createRecurringPaymentUseCase(
+                    title = title,
+                    description = state.description.ifBlank { null },
+                    amount = amount,
+                    category = state.selectedCategory,
+                    type = state.selectedType,
+                    frequency = state.frequency,
+                    startDate = state.startDate
+                )
+            } else {
+                createTransactionUseCase(
+                    type = state.selectedType,
+                    category = state.selectedCategory,
+                    amount = amount,
+                    description = state.description.ifBlank { null },
+                    transactionDate = state.transactionDate
+                )
+            }
+
+            when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false, isVisible = false) }
                     _effect.send(AddTransactionSheetEffect.TransactionAdded)
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    _effect.send(AddTransactionSheetEffect.ShowError(result.message ?: "Bir hata oluştu"))
+                    _effect.send(
+                        AddTransactionSheetEffect.ShowError(result.message ?: "Bir hata oluştu")
+                    )
                 }
                 is Resource.Loading -> Unit
             }

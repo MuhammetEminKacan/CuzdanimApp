@@ -3,6 +3,7 @@ package com.mek.cuzdanimapp.di
 import com.mek.cuzdanimapp.BuildConfig
 import com.mek.cuzdanimapp.data.remote.AuthApi
 import com.mek.cuzdanimapp.data.remote.DashboardApi
+import com.mek.cuzdanimapp.data.remote.RecurringPaymentApi
 import com.mek.cuzdanimapp.data.remote.TransactionApi
 import com.mek.cuzdanimapp.data.remote.interceptor.AuthInterceptor
 import dagger.Module
@@ -103,5 +104,11 @@ object NetworkModule {
     @Singleton
     fun provideTransactionApi(retrofit: Retrofit): TransactionApi {
         return retrofit.create(TransactionApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecurringPaymentApi(retrofit: Retrofit): RecurringPaymentApi {
+        return retrofit.create(RecurringPaymentApi::class.java)
     }
 }

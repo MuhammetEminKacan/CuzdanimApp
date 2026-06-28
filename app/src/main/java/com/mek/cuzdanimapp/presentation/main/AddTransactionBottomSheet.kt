@@ -26,6 +26,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -198,6 +200,91 @@ fun AddTransactionBottomSheet(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                // Düzenli ödeme switch
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Düzenli Ödeme",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Otomatik tekrarlansın",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = state.isRecurring,
+                        onCheckedChange = {
+                            viewModel.onEvent(AddTransactionSheetEvent.ToggleRecurring)
+                        },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                // Sıklık seçimi — sadece isRecurring true ise
+                if (state.isRecurring) {
+                    Text(
+                        text = "Sıklık",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf(
+                            "DAILY" to "Günlük",
+                            "WEEKLY" to "Haftalık",
+                            "MONTHLY" to "Aylık",
+                            "YEARLY" to "Yıllık"
+                        ).forEach { (freq, label) ->
+                            val isSelected = state.frequency == freq
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.primary
+                                        else Color.Transparent
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.outline,
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clickable {
+                                        viewModel.onEvent(
+                                            AddTransactionSheetEvent.FrequencyChanged(freq)
+                                        )
+                                    }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold
+                                    else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                    else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Hata mesajı
                 if (state.errorMessage != null) {
