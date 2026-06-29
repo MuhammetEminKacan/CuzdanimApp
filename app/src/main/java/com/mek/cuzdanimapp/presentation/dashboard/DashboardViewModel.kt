@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.dashboard.GetDashboardSummaryUseCase
 import com.mek.cuzdanimapp.util.Resource
+import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase
+    private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
+    private val transactionEventBus: TransactionEventBus
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DashboardState())
@@ -27,12 +29,26 @@ class DashboardViewModel @Inject constructor(
 
     init {
         onEvent(DashboardEvent.LoadDashboard)
+        observeTransactionEvents()
     }
 
     fun onEvent(event: DashboardEvent) {
         when (event) {
             is DashboardEvent.LoadDashboard,
             is DashboardEvent.Refresh -> loadDashboard()
+        }
+    }
+
+    private fun observeTransactionEvents() {
+        viewModelScope.launch {
+            transactionEventBus.events.collect { event ->
+                when (event) {
+                    is TransactionEventBus.TransactionEvent.TransactionAdded,
+                    is TransactionEventBus.TransactionEvent.TransactionDeleted -> {
+                        loadDashboard()
+                    }
+                }
+            }
         }
     }
 

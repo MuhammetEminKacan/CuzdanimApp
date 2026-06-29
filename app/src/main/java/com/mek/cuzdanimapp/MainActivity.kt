@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import com.mek.cuzdanimapp.data.local.TokenManager
 import com.mek.cuzdanimapp.presentation.navigation.AppNavGraph
-import com.mek.cuzdanimapp.presentation.navigation.LoginRoute
 import com.mek.cuzdanimapp.presentation.navigation.NavigationState
 import com.mek.cuzdanimapp.ui.theme.CuzdanimAppTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,10 +29,7 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(Unit) {
                     tokenManager.logoutEvent.collect {
-                        navState.value?.let { state ->
-                            state.backStacks.values.forEach { it.clear() }
-                            state.topLevelRoute = LoginRoute
-                        }
+                        recreate()
                     }
                 }
 

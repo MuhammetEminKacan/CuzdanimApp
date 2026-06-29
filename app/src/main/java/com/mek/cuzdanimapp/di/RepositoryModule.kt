@@ -1,11 +1,15 @@
 package com.mek.cuzdanimapp.di
 
 import com.mek.cuzdanimapp.data.repository.AuthRepositoryImpl
+import com.mek.cuzdanimapp.data.repository.BudgetRepositoryImpl
 import com.mek.cuzdanimapp.data.repository.DashboardRepositoryImpl
+import com.mek.cuzdanimapp.data.repository.ProfileRepositoryImpl
 import com.mek.cuzdanimapp.data.repository.RecurringPaymentRepositoryImpl
 import com.mek.cuzdanimapp.data.repository.TransactionRepositoryImpl
 import com.mek.cuzdanimapp.domain.repository.AuthRepository
+import com.mek.cuzdanimapp.domain.repository.BudgetRepository
 import com.mek.cuzdanimapp.domain.repository.DashboardRepository
+import com.mek.cuzdanimapp.domain.repository.ProfileRepository
 import com.mek.cuzdanimapp.domain.repository.RecurringPaymentRepository
 import com.mek.cuzdanimapp.domain.repository.TransactionRepository
 import dagger.Binds
@@ -41,4 +45,16 @@ abstract class RepositoryModule {
     abstract fun bindRecurringPaymentRepository(
         impl: RecurringPaymentRepositoryImpl
     ): RecurringPaymentRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBudgetRepository(
+        impl: BudgetRepositoryImpl
+    ): BudgetRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileRepository(
+        impl: ProfileRepositoryImpl
+    ): ProfileRepository
 }
