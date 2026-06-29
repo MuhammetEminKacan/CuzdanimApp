@@ -6,4 +6,5 @@ sealed class LoginEvent {
     data object TogglePasswordVisibility : LoginEvent()
     data object LoginClicked : LoginEvent()
     data object NavigateToRegister : LoginEvent()
+    data object ResendVerification : LoginEvent()
 }

@@ -24,7 +24,7 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = api.login(LoginRequest(email, password))
             val result = response.toDomain()
-            tokenManager.saveTokens(result.accessToken, result.refreshToken)
+            tokenManager.saveTokens(result.accessToken!!, result.refreshToken!!)
             Resource.Success(result)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Bilinmeyen bir hata oluştu")
@@ -40,10 +40,10 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = api.register(RegisterRequest(fullName, email, password, currency))
             val result = response.toDomain()
-            tokenManager.saveTokens(result.accessToken, result.refreshToken)
+            // Token null — mail doğrulanmadan token yok
             Resource.Success(result)
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Bilinmeyen bir hata oluştu")
+            Resource.Error(e.message ?: "Bir hata oluştu")
         }
     }
 
@@ -51,10 +51,19 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = api.refreshToken(RefreshTokenRequest(refreshToken))
             val result = response.toDomain()
-            tokenManager.saveTokens(result.accessToken, result.refreshToken)
+            tokenManager.saveTokens(result.accessToken!!, result.refreshToken!!)
             Resource.Success(result)
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Bilinmeyen bir hata oluştu")
+        }
+    }
+
+    override suspend fun resendVerification(email: String): Resource<Unit> {
+        return try {
+            api.resendVerification(email)
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Resource.Error(e.message ?: "Mail gönderilemedi")
         }
     }
 }

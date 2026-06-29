@@ -72,6 +72,12 @@ fun RegisterScreen(
                 is RegisterEffect.NavigateToDashboard -> onNavigateToDashboard()
                 is RegisterEffect.NavigateToLogin -> onNavigateToLogin()
                 is RegisterEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+                is RegisterEffect.ShowVerificationMessage -> {
+                    snackbarHostState.showSnackbar(
+                        "Doğrulama maili gönderildi! Mailinizi onayladıktan sonra giriş yapabilirsiniz."
+                    )
+                    onNavigateToLogin()
+                }
             }
         }
     }

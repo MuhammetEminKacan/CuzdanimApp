@@ -70,6 +70,9 @@ fun LoginScreen(
                 is LoginEffect.NavigateToDashboard -> onNavigateToDashboard()
                 is LoginEffect.NavigateToRegister -> onNavigateToRegister()
                 is LoginEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+                is LoginEffect.VerificationResent -> {
+                    snackbarHostState.showSnackbar("Doğrulama maili tekrar gönderildi!")
+                }
             }
         }
     }
@@ -212,7 +215,6 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Hata mesajı
                 if (state.errorMessage != null) {
                     Text(
                         text = state.errorMessage!!,
@@ -220,6 +222,19 @@ fun LoginScreen(
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
                     )
+                }
+
+                if (state.showResendOption) {
+                    TextButton(
+                        onClick = { viewModel.onEvent(LoginEvent.ResendVerification) }
+                    ) {
+                        Text(
+                            text = "Doğrulama mailini tekrar gönder →",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
