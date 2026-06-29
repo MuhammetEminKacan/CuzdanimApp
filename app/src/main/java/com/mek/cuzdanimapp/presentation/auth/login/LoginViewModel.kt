@@ -3,6 +3,7 @@ package com.mek.cuzdanimapp.presentation.auth.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.auth.LoginUseCase
+import com.mek.cuzdanimapp.domain.usecase.auth.ResendVerificationUseCase
 import com.mek.cuzdanimapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val resendVerificationUseCase: ResendVerificationUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -42,6 +44,12 @@ class LoginViewModel @Inject constructor(
                     _effect.send(LoginEffect.NavigateToRegister)
                 }
             }
+            is LoginEvent.ResendVerification -> {
+                viewModelScope.launch {
+                    resendVerificationUseCase(_state.value.email)
+                    _effect.send(LoginEffect.VerificationResent)
+                }
+            }
         }
     }
 
@@ -58,13 +66,18 @@ class LoginViewModel @Inject constructor(
                     _effect.send(LoginEffect.NavigateToDashboard)
                 }
                 is Resource.Error -> {
+                    val isNotVerified = result.message?.contains("7001") == true ||
+                            result.message?.contains("not verified") == true
+
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = result.message
+                            errorMessage = if (isNotVerified)
+                                "E-posta adresiniz doğrulanmamış."
+                            else result.message,
+                            showResendOption = isNotVerified
                         )
                     }
-                    _effect.send(LoginEffect.ShowError(result.message ?: "Bir hata oluştu"))
                 }
                 is Resource.Loading -> Unit
             }

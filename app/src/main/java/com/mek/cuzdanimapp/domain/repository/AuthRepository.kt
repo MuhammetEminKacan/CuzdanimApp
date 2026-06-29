@@ -8,4 +8,5 @@ interface AuthRepository {
     suspend fun login(email : String, password : String) : Resource<AuthResult>
     suspend fun register(fullName: String, email: String, password: String, currency: CurrencyType?) : Resource<AuthResult>
     suspend fun refresh(refreshToken: String): Resource<AuthResult>
+    suspend fun resendVerification(email: String): Resource<Unit>
 }

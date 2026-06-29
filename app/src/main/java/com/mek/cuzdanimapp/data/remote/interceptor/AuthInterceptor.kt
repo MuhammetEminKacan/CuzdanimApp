@@ -37,8 +37,8 @@ class AuthInterceptor @Inject constructor(
                 }
 
                 tokenManager.saveTokens(
-                    refreshResponse.accessToken,
-                    refreshResponse.refreshToken
+                    refreshResponse.accessToken!!,
+                    refreshResponse.refreshToken!!
                 )
 
                 val newRequest = chain.request().newBuilder()

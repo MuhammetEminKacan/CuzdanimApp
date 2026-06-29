@@ -3,7 +3,10 @@ package com.mek.cuzdanimapp.presentation.navigation
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
@@ -42,6 +45,8 @@ fun AppNavGraph(
         )
     )
 
+    var showVerificationMessage by remember { mutableStateOf(false) }
+
     LaunchedEffect(navState) { onNavStateReady(navState) }
 
     val navigator = remember(navState) { Navigator(navState) }
@@ -76,12 +81,17 @@ fun AppNavGraph(
                     onNavigateToRegister = { navigator.navigate(RegisterRoute) },
                     viewModel = viewModel
                 )
+                LaunchedEffect(showVerificationMessage) {
+                    if (showVerificationMessage) showVerificationMessage = false
+                }
             }
             is RegisterRoute -> NavEntry(route) {
                 val viewModel: RegisterViewModel = viewModel()
                 RegisterScreen(
                     onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
-                    onNavigateToLogin = { navigator.goBack() },
+                    onNavigateToLogin = {
+                        navigator.replaceAll(LoginRoute)
+                    },
                     viewModel = viewModel
                 )
             }

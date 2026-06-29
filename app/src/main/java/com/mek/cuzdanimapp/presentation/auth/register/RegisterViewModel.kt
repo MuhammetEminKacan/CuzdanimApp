@@ -88,7 +88,7 @@ class RegisterViewModel @Inject constructor(
             )) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false) }
-                    _effect.send(RegisterEffect.NavigateToDashboard)
+                    _effect.send(RegisterEffect.ShowVerificationMessage)
                 }
                 is Resource.Error -> {
                     _state.update {
