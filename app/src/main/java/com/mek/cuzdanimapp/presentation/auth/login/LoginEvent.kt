@@ -7,4 +7,5 @@ sealed class LoginEvent {
     data object LoginClicked : LoginEvent()
     data object NavigateToRegister : LoginEvent()
     data object ResendVerification : LoginEvent()
+    data object ClearState : LoginEvent()
 }

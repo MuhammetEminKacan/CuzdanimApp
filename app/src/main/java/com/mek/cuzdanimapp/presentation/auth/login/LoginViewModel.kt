@@ -50,6 +50,9 @@ class LoginViewModel @Inject constructor(
                     _effect.send(LoginEffect.VerificationResent)
                 }
             }
+            is LoginEvent.ClearState -> {
+                _state.update { LoginState() }
+            }
         }
     }
 

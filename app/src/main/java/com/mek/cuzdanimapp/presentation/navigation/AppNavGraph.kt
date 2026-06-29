@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.mek.cuzdanimapp.presentation.auth.login.LoginEvent
 import com.mek.cuzdanimapp.presentation.auth.login.LoginScreen
 import com.mek.cuzdanimapp.presentation.auth.login.LoginViewModel
 import com.mek.cuzdanimapp.presentation.auth.register.RegisterScreen
@@ -76,14 +77,16 @@ fun AppNavGraph(
             }
             is LoginRoute -> NavEntry(route) {
                 val viewModel: LoginViewModel = viewModel()
+
+                LaunchedEffect(Unit) {
+                    viewModel.onEvent(LoginEvent.ClearState)
+                }
+
                 LoginScreen(
                     onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
                     onNavigateToRegister = { navigator.navigate(RegisterRoute) },
                     viewModel = viewModel
                 )
-                LaunchedEffect(showVerificationMessage) {
-                    if (showVerificationMessage) showVerificationMessage = false
-                }
             }
             is RegisterRoute -> NavEntry(route) {
                 val viewModel: RegisterViewModel = viewModel()
