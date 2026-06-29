@@ -12,6 +12,7 @@ import com.mek.cuzdanimapp.presentation.auth.login.LoginViewModel
 import com.mek.cuzdanimapp.presentation.auth.register.RegisterScreen
 import com.mek.cuzdanimapp.presentation.auth.register.RegisterViewModel
 import com.mek.cuzdanimapp.presentation.budget.BudgetScreen
+import com.mek.cuzdanimapp.presentation.budget.BudgetViewModel
 import com.mek.cuzdanimapp.presentation.dashboard.DashboardScreen
 import com.mek.cuzdanimapp.presentation.dashboard.DashboardViewModel
 import com.mek.cuzdanimapp.presentation.main.AddTransactionBottomSheet
@@ -20,6 +21,7 @@ import com.mek.cuzdanimapp.presentation.main.AddTransactionSheetEvent
 import com.mek.cuzdanimapp.presentation.main.AddTransactionViewModel
 import com.mek.cuzdanimapp.presentation.main.MainScreen
 import com.mek.cuzdanimapp.presentation.profile.ProfileScreen
+import com.mek.cuzdanimapp.presentation.profile.ProfileViewModel
 import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentViewModel
 import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentsScreen
 import com.mek.cuzdanimapp.presentation.splash.SplashScreen
@@ -113,6 +115,7 @@ fun AppNavGraph(
                 }
             }
             is BudgetRoute -> NavEntry(route) {
+                val viewModel: BudgetViewModel = viewModel()
                 MainScreen(
                     currentRoute = navState.topLevelRoute,
                     onNavigate = { navigator.navigate(it) },
@@ -120,10 +123,11 @@ fun AppNavGraph(
                         addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
                     }
                 ) {
-                    BudgetScreen()
+                    BudgetScreen(viewModel = viewModel)
                 }
             }
             is ProfileRoute -> NavEntry(route) {
+                val viewModel: ProfileViewModel = viewModel()
                 MainScreen(
                     currentRoute = navState.topLevelRoute,
                     onNavigate = { navigator.navigate(it) },
@@ -131,7 +135,10 @@ fun AppNavGraph(
                         addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
                     }
                 ) {
-                    ProfileScreen()
+                    ProfileScreen(
+                        viewModel = viewModel,
+                        onLoggedOut = { navigator.replaceAll(LoginRoute) }
+                    )
                 }
             }
 

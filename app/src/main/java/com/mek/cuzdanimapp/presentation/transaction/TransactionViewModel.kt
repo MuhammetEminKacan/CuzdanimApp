@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.transaction.DeleteTransactionUseCase
 import com.mek.cuzdanimapp.domain.usecase.transaction.GetAllTransactionsUseCase
 import com.mek.cuzdanimapp.util.Resource
+import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TransactionViewModel @Inject constructor(
     private val getAllTransactionsUseCase: GetAllTransactionsUseCase,
-    private val deleteTransactionUseCase: DeleteTransactionUseCase
+    private val deleteTransactionUseCase: DeleteTransactionUseCase,
+    private val transactionEventBus: TransactionEventBus
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(TransactionState())
@@ -98,6 +100,7 @@ class TransactionViewModel @Inject constructor(
                         it.copy(transactions = updated)
                     }
                     applyFilters()
+                    transactionEventBus.emit(TransactionEventBus.TransactionEvent.TransactionDeleted)
                     _effect.send(TransactionEffect.TransactionDeleted)
                 }
                 is Resource.Error -> {

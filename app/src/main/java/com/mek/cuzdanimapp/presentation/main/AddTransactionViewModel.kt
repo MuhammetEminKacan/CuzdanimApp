@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.recurring.CreateRecurringPaymentUseCase
 import com.mek.cuzdanimapp.domain.usecase.transaction.CreateTransactionUseCase
 import com.mek.cuzdanimapp.util.Resource
+import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class AddTransactionViewModel @Inject constructor(
     private val createTransactionUseCase: CreateTransactionUseCase,
-    private val createRecurringPaymentUseCase: CreateRecurringPaymentUseCase
+    private val createRecurringPaymentUseCase: CreateRecurringPaymentUseCase,
+    private val transactionEventBus: TransactionEventBus
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddTransactionSheetState())
@@ -107,6 +109,7 @@ class AddTransactionViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false, isVisible = false) }
+                    transactionEventBus.emit(TransactionEventBus.TransactionEvent.TransactionAdded)
                     _effect.send(AddTransactionSheetEffect.TransactionAdded)
                 }
                 is Resource.Error -> {
