@@ -8,7 +8,7 @@ sealed class AddTransactionSheetEvent {
     data class AmountChanged(val amount: String) : AddTransactionSheetEvent()
     data class DescriptionChanged(val description: String) : AddTransactionSheetEvent()
     data class DateChanged(val date: String) : AddTransactionSheetEvent()
-    data object SaveClicked : AddTransactionSheetEvent()
+    data class SaveClicked(val categoryDisplayName: String) : AddTransactionSheetEvent() // DEĞİŞTİ
     data object ToggleRecurring : AddTransactionSheetEvent()
     data class FrequencyChanged(val frequency: String) : AddTransactionSheetEvent()
 }

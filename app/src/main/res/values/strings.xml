@@ -1,3 +1,165 @@
 <resources>
-    <string name="app_name">CuzdanimApp</string>
+    <string name="app_name">Cüzdanım</string>
+
+    <!-- Ortak -->
+    <string name="email_label">E-posta</string>
+    <string name="password_label">Şifre</string>
+    <string name="login_action">Giriş Yap</string>
+    <string name="register_action">Kayıt Ol</string>
+
+    <!-- Login -->
+    <string name="login_welcome_back">Tekrar hoş geldiniz</string>
+    <string name="login_subtitle">Hesabınıza güvenli giriş yapın.</string>
+    <string name="login_resend_verification">Doğrulama mailini tekrar gönder →</string>
+    <string name="login_no_account">Hesabın yok mu?</string>
+    <string name="login_verification_resent">Doğrulama maili tekrar gönderildi!</string>
+
+    <!-- Register -->
+    <string name="register_title">Hesap Oluştur</string>
+    <string name="register_subtitle">Finansal hedeflerinizi takip etmeye başlayın.</string>
+    <string name="register_full_name_label">Ad Soyad</string>
+    <string name="register_confirm_password_label">Şifre Tekrar</string>
+    <string name="register_currency_label">Para Birimi</string>
+    <string name="register_have_account">Zaten hesabın var mı?</string>
+    <string name="register_verification_sent">Doğrulama maili gönderildi! Mailinizi onayladıktan sonra giriş yapabilirsiniz.</string>
+
+    <string name="budget_screen_title">Bütçeler</string>
+    <string name="budget_empty_message">Henüz bütçe eklenmedi</string>
+    <string name="budget_saved">Bütçe kaydedildi</string>
+    <string name="budget_deleted">Bütçe silindi</string>
+
+    <string name="budget_delete_title">Bütçeyi Sil</string>
+    <string name="budget_delete_confirmation">Bu bütçeyi silmek istediğinize emin misiniz?</string>
+    <string name="budget_delete_action">Sil</string>
+    <string name="budget_cancel_action">İptal</string>
+
+    <string name="budget_add_title">Bütçe Ekle</string>
+    <string name="budget_edit_title">Bütçeyi Düzenle</string>
+    <string name="budget_category_label">Kategori</string>
+    <string name="budget_limit_label">Aylık Limit (₺)</string>
+    <string name="budget_save_action">Kaydet</string>
+
+    <string name="budget_edit_action">Düzenle</string>
+    <string name="budget_spent_label">Harcanan</string>
+    <string name="budget_limit_title">Limit</string>
+    <string name="budget_remaining_label">Kalan</string>
+    <string name="budget_amount_format">₺%1$s</string>
+
+    <string name="budget_warning_critical">⚠️ Bütçenizin %%%1$d\'ini kullandınız!</string>
+    <string name="budget_warning_warning">Bütçenizin %%%1$d\'ini kullandınız</string>
+
+    <string name="dashboard_total_balance">Toplam Bakiye</string>
+    <string name="dashboard_income_label">Gelir</string>
+    <string name="dashboard_expense_label">Gider</string>
+    <string name="dashboard_upcoming_payments">Yaklaşan Ödemeler</string>
+    <string name="dashboard_recent_transactions">Son İşlemler</string>
+    <string name="dashboard_see_all">Tümünü Gör</string>
+
+    <string name="dashboard_amount_format">₺%1$s</string>
+    <string name="dashboard_income_format">+₺%1$s</string>
+    <string name="dashboard_expense_format">-₺%1$s</string>
+
+    <!-- Navigation -->
+    <string name="nav_dashboard">Ana Sayfa</string>
+    <string name="nav_budget">Bütçe</string>
+
+    <!-- Add Transaction Sheet -->
+    <string name="transaction_add_title">İşlem Ekle</string>
+    <string name="transaction_type_income">Gelir</string>
+    <string name="transaction_type_expense">Gider</string>
+    <string name="transaction_amount_label">Tutar (₺)</string>
+    <string name="transaction_category_label">Kategori</string>
+    <string name="transaction_description_label">Açıklama (opsiyonel)</string>
+    <string name="transaction_recurring_label">Düzenli Ödeme</string>
+    <string name="transaction_recurring_subtitle">Otomatik tekrarlansın</string>
+    <string name="transaction_frequency_label">Sıklık</string>
+    <string name="transaction_save_action">Kaydet</string>
+
+    <!-- Frequencies -->
+    <string name="frequency_daily">Günlük</string>
+    <string name="frequency_weekly">Haftalık</string>
+    <string name="frequency_monthly">Aylık</string>
+    <string name="frequency_yearly">Yıllık</string>
+
+    <!-- Categories -->
+    <string name="category_salary">Maaş</string>
+    <string name="category_freelance">Freelance</string>
+    <string name="category_investment">Yatırım</string>
+    <string name="category_scholarship">Burs</string>
+    <string name="category_bonus">Prim</string>
+    <string name="category_groceries">Market</string>
+    <string name="category_food">Yemek</string>
+    <string name="category_transportation">Ulaşım</string>
+    <string name="category_fuel">Yakıt</string>
+    <string name="category_health">Sağlık</string>
+    <string name="category_education">Eğitim</string>
+    <string name="category_entertainment">Eğlence</string>
+    <string name="category_rent">Kira</string>
+    <string name="category_bills">Fatura</string>
+    <string name="category_shopping">Alışveriş</string>
+    <string name="category_other">Diğer</string>
+
+    <string name="nav_transactions">İşlemler</string>
+    <string name="nav_recurring">Düzenli</string>
+    <string name="nav_profile">Profil</string>
+    <string name="navigation_unknown_screen">Bilinmeyen ekran</string>
+
+    <!-- Profile -->
+    <string name="profile_updated">Profil güncellendi</string>
+    <string name="profile_password_changed">Şifre değiştirildi</string>
+    <string name="profile_cancel_action">İptal</string>
+
+    <!-- Menu Items Descriptions -->
+    <string name="profile_edit_title">Profili Düzenle</string>
+    <string name="profile_edit_subtitle">Ad, para birimi</string>
+    <string name="profile_change_password_title">Şifre Değiştir</string>
+    <string name="profile_change_password_subtitle">Hesap güvenliği</string>
+    <string name="profile_dark_mode_title">Karanlık Mod</string>
+    <string name="profile_dark_mode_subtitle">Koyu temaya geç</string>
+
+    <!-- Forms Labels -->
+    <string name="profile_current_password_label">Mevcut Şifre</string>
+    <string name="profile_new_password_label">Yeni Şifre</string>
+    <string name="profile_new_password_confirm_label">Yeni Şifre (Tekrar)</string>
+
+    <!-- Logout Dialog -->
+    <string name="profile_logout_title">Çıkış Yap</string>
+    <string name="profile_logout_subtitle">Hesabınızdan çıkış yapın</string>
+    <string name="profile_logout_confirmation">Hesabınızdan çıkış yapmak istediğinize emin misiniz?</string>
+
+    <!-- Delete Account Sheet -->
+    <string name="profile_delete_account_title">Hesabı Sil</string>
+    <string name="profile_delete_account_subtitle">Tüm verileriniz kalıcı olarak silinir</string>
+    <string name="profile_delete_account_warning">Bu işlem geri alınamaz. Tüm verileriniz (işlemler, bütçeler, düzenli ödemeler) kalıcı olarak silinecek.</string>
+    <string name="profile_enter_password_label">Şifrenizi girin</string>
+    <string name="profile_delete_account_action_btn">Hesabımı Kalıcı Olarak Sil</string>
+
+    <!-- Recurring Payments -->
+    <string name="recurring_empty_message">Düzenli ödeme bulunamadı</string>
+    <string name="recurring_deleted">Düzenli ödeme silindi</string>
+    <string name="recurring_delete_title">Düzenli Ödemeyi Sil</string>
+    <string name="recurring_delete_confirmation">Bu düzenli ödemeyi silmek istediğinize emin misiniz?</string>
+
+    <!-- Splash -->
+    <string name="splash_subtitle">Finansal özgürlüğünü yönet</string>
+
+    <string name="transaction_empty_message">İşlem bulunamadı</string>
+    <string name="transaction_deleted">İşlem silindi</string>
+    <string name="transaction_delete_title">İşlemi Sil</string>
+    <string name="transaction_delete_confirmation">Bu işlemi silmek istediğinize emin misiniz?</string>
+
+    <string name="filter_all">Tümü</string>
+    <string name="filter_all_categories">Tüm Kategoriler</string>
+
+    <string name="label_income_caps">GELİR</string>
+    <string name="label_expense_caps">GİDER</string>
+
+    <string name="profile_language">Dil</string>
+    <string name="profile_language_subtitle">Uygulama dilini değiştir</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_english">İngilizce</string>
+    <string name="language_system">Sistem Dili</string>
+    <string name="language_dialog_title">Dil Seçin</string>
+
+    <string name="cancel">İptal</string>
 </resources>

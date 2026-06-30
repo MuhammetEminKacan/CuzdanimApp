@@ -42,12 +42,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.RecurringPayment
 import com.mek.cuzdanimapp.presentation.main.categoryDisplayName
+import com.mek.cuzdanimapp.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +60,8 @@ fun RecurringPaymentsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var paymentToDelete by remember { mutableStateOf<Long?>(null) }
 
+    val deletedMessage = stringResource(R.string.recurring_deleted)
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -65,7 +69,7 @@ fun RecurringPaymentsScreen(
                     snackbarHostState.showSnackbar(effect.message)
                 }
                 is RecurringPaymentEffect.Deleted -> {
-                    snackbarHostState.showSnackbar("Düzenli ödeme silindi")
+                    snackbarHostState.showSnackbar(deletedMessage)
                 }
             }
         }
@@ -74,8 +78,8 @@ fun RecurringPaymentsScreen(
     paymentToDelete?.let { id ->
         AlertDialog(
             onDismissRequest = { paymentToDelete = null },
-            title = { Text("Düzenli Ödemeyi Sil") },
-            text = { Text("Bu düzenli ödemeyi silmek istediğinize emin misiniz?") },
+            title = { Text(stringResource(R.string.recurring_delete_title)) },
+            text = { Text(stringResource(R.string.recurring_delete_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -83,12 +87,12 @@ fun RecurringPaymentsScreen(
                         paymentToDelete = null
                     }
                 ) {
-                    Text("Sil", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.budget_delete_action), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { paymentToDelete = null }) {
-                    Text("İptal")
+                    Text(stringResource(R.string.budget_cancel_action))
                 }
             }
         )
@@ -106,7 +110,7 @@ fun RecurringPaymentsScreen(
             ) {
                 item {
                     Text(
-                        text = "Düzenli Ödemeler",
+                        text = stringResource(R.string.nav_recurring),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -123,7 +127,7 @@ fun RecurringPaymentsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Düzenli ödeme bulunamadı",
+                                text = stringResource(R.string.recurring_empty_message),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
@@ -186,8 +190,8 @@ private fun RecurringPaymentCard(
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(
-                            if (isIncome) Color(0xFF4CAF50).copy(alpha = 0.1f)
-                            else Color(0xFFF44336).copy(alpha = 0.1f)
+                            if (isIncome) MaterialTheme.appColors.income.copy(alpha = 0.1f)
+                            else MaterialTheme.appColors.expense.copy(alpha = 0.1f)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -195,7 +199,7 @@ private fun RecurringPaymentCard(
                         text = payment.title.first().toString(),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
                     )
                 }
 
@@ -224,10 +228,10 @@ private fun RecurringPaymentCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "₺${String.format("%.2f", payment.amount)}",
+                    text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", payment.amount)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                    color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
                 )
 
                 Row(
@@ -250,7 +254,7 @@ private fun RecurringPaymentCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Sil",
+                            contentDescription = stringResource(R.string.budget_delete_action),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(18.dp)
                         )
@@ -261,12 +265,13 @@ private fun RecurringPaymentCard(
     }
 }
 
+@Composable
 fun frequencyDisplayName(frequency: String): String {
     return when (frequency) {
-        "DAILY" -> "Günlük"
-        "WEEKLY" -> "Haftalık"
-        "MONTHLY" -> "Aylık"
-        "YEARLY" -> "Yıllık"
+        "DAILY" -> stringResource(R.string.frequency_daily)
+        "WEEKLY" -> stringResource(R.string.frequency_weekly)
+        "MONTHLY" -> stringResource(R.string.frequency_monthly)
+        "YEARLY" -> stringResource(R.string.frequency_yearly)
         else -> frequency
     }
 }

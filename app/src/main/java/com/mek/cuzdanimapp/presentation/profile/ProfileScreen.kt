@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,8 +21,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Visibility
@@ -39,9 +42,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -57,12 +63,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
+import com.mek.cuzdanimapp.util.findActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,18 +80,28 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     onLoggedOut: () -> Unit
 ) {
+    val context = LocalContext.current
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    val isDarkMode by viewModel.isDarkMode.collectAsState(initial = false)
+    val currentLanguage by viewModel.currentLanguage.collectAsState(initial = null)
+    var showLanguageDialog by remember { mutableStateOf(false) }
+
+    val profileUpdatedMessage = stringResource(R.string.profile_updated)
+    val passwordChangedMessage = stringResource(R.string.profile_password_changed)
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is ProfileEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
-                is ProfileEffect.ProfileUpdated -> snackbarHostState.showSnackbar("Profil güncellendi")
-                is ProfileEffect.PasswordChanged -> snackbarHostState.showSnackbar("Şifre değiştirildi")
+                is ProfileEffect.ProfileUpdated -> snackbarHostState.showSnackbar(profileUpdatedMessage)
+                is ProfileEffect.PasswordChanged -> snackbarHostState.showSnackbar(passwordChangedMessage)
                 is ProfileEffect.AccountDeleted -> onLoggedOut()
                 is ProfileEffect.LoggedOut -> onLoggedOut()
+                is ProfileEffect.LanguageChanged -> {
+                    context.findActivity()?.recreate()
+                }
             }
         }
     }
@@ -100,14 +120,14 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Hesabı Sil",
+                    text = stringResource(R.string.profile_delete_account_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error
                 )
 
                 Text(
-                    text = "Bu işlem geri alınamaz. Tüm verileriniz (işlemler, bütçeler, düzenli ödemeler) kalıcı olarak silinecek.",
+                    text = stringResource(R.string.profile_delete_account_warning),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -115,7 +135,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.deletePassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.DeletePasswordChanged(it)) },
-                    label = { Text("Şifrenizi girin") },
+                    label = { Text(stringResource(R.string.profile_enter_password_label)) },
                     visualTransformation = if (state.isDeletePasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -165,7 +185,7 @@ fun ProfileScreen(
                         )
                     } else {
                         Text(
-                            text = "Hesabımı Kalıcı Olarak Sil",
+                            text = stringResource(R.string.profile_delete_account_action_btn),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -181,8 +201,8 @@ fun ProfileScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Çıkış Yap") },
-            text = { Text("Hesabınızdan çıkış yapmak istediğinize emin misiniz?") },
+            title = { Text(stringResource(R.string.profile_logout_title)) },
+            text = { Text(stringResource(R.string.profile_logout_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -190,12 +210,53 @@ fun ProfileScreen(
                         viewModel.onEvent(ProfileEvent.Logout)
                     }
                 ) {
-                    Text("Çıkış Yap", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.profile_logout_title), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("İptal")
+                    Text(stringResource(R.string.profile_cancel_action))
+                }
+            }
+        )
+    }
+
+    // Language Dialog
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.language_dialog_title)) },
+            text = {
+                Column {
+                    LanguageOption(
+                        label = stringResource(R.string.language_system),
+                        selected = currentLanguage == null,
+                        onClick = {
+                            viewModel.setLanguage(null)
+                            showLanguageDialog = false
+                        }
+                    )
+                    LanguageOption(
+                        label = stringResource(R.string.language_turkish),
+                        selected = currentLanguage == "tr",
+                        onClick = {
+                            viewModel.setLanguage("tr")
+                            showLanguageDialog = false
+                        }
+                    )
+                    LanguageOption(
+                        label = stringResource(R.string.language_english),
+                        selected = currentLanguage == "en",
+                        onClick = {
+                            viewModel.setLanguage("en")
+                            showLanguageDialog = false
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -217,7 +278,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Profili Düzenle",
+                    text = stringResource(R.string.profile_edit_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -225,7 +286,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.fullName,
                     onValueChange = { viewModel.onEvent(ProfileEvent.FullNameChanged(it)) },
-                    label = { Text("Ad Soyad") },
+                    label = { Text(stringResource(R.string.register_full_name_label)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -235,7 +296,7 @@ fun ProfileScreen(
                 )
 
                 Text(
-                    text = "Para Birimi",
+                    text = stringResource(R.string.register_currency_label),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -301,7 +362,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Kaydet", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.budget_save_action), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -324,7 +385,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Şifre Değiştir",
+                    text = stringResource(R.string.profile_change_password_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -332,7 +393,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.oldPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.OldPasswordChanged(it)) },
-                    label = { Text("Mevcut Şifre") },
+                    label = { Text(stringResource(R.string.profile_current_password_label)) },
                     visualTransformation = if (state.isPasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -358,7 +419,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.newPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.NewPasswordChanged(it)) },
-                    label = { Text("Yeni Şifre") },
+                    label = { Text(stringResource(R.string.profile_new_password_label)) },
                     visualTransformation = if (state.isNewPasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -384,7 +445,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.confirmPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.ConfirmPasswordChanged(it)) },
-                    label = { Text("Yeni Şifre (Tekrar)") },
+                    label = { Text(stringResource(R.string.profile_new_password_confirm_label)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
@@ -419,7 +480,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Kaydet", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.budget_save_action), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -435,7 +496,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Profil",
+                text = stringResource(R.string.nav_profile),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -511,8 +572,8 @@ fun ProfileScreen(
                     Column {
                         ProfileMenuItem(
                             icon = Icons.Default.Edit,
-                            title = "Profili Düzenle",
-                            subtitle = "Ad, para birimi",
+                            title = stringResource(R.string.profile_edit_title),
+                            subtitle = stringResource(R.string.profile_edit_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowEditSheet) }
                         )
 
@@ -526,12 +587,86 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.Lock,
-                            title = "Şifre Değiştir",
-                            subtitle = "Hesap güvenliği",
+                            title = stringResource(R.string.profile_change_password_title),
+                            subtitle = stringResource(R.string.profile_change_password_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowPasswordSheet) }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .padding(horizontal = 16.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+
+                        // Karanlık Mod
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.DarkMode,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.profile_dark_mode_title),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.profile_dark_mode_subtitle),
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            Switch(
+                                checked = isDarkMode,
+                                onCheckedChange = { viewModel.toggleDarkMode(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
+
+                        // Dil Seçeneği Çizgisi ve Elemanı
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(1.dp)
+                                .padding(horizontal = 16.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                        ProfileMenuItem(
+                            icon = Icons.Default.Language,
+                            title = stringResource(R.string.profile_language),
+                            subtitle = stringResource(R.string.profile_language_subtitle),
+                            onClick = { showLanguageDialog = true }
                         )
                     }
                 }
+
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
@@ -542,8 +677,8 @@ fun ProfileScreen(
                     Column {
                         ProfileMenuItem(
                             icon = Icons.Default.Logout,
-                            title = "Çıkış Yap",
-                            subtitle = "Hesabınızdan çıkış yapın",
+                            title = stringResource(R.string.profile_logout_title),
+                            subtitle = stringResource(R.string.profile_logout_subtitle),
                             onClick = { showLogoutDialog = true },
                             iconTint = MaterialTheme.colorScheme.error,
                             titleColor = MaterialTheme.colorScheme.error
@@ -559,8 +694,8 @@ fun ProfileScreen(
 
                         ProfileMenuItem(
                             icon = Icons.Default.DeleteForever,
-                            title = "Hesabı Sil",
-                            subtitle = "Tüm verileriniz kalıcı olarak silinir",
+                            title = stringResource(R.string.profile_delete_account_title),
+                            subtitle = stringResource(R.string.profile_delete_account_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowDeleteSheet) },
                             iconTint = MaterialTheme.colorScheme.error,
                             titleColor = MaterialTheme.colorScheme.error
@@ -631,5 +766,30 @@ private fun ProfileMenuItem(
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(20.dp)
         )
+    }
+}
+
+@Composable
+private fun LanguageOption(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            colors = androidx.compose.material3.RadioButtonDefaults.colors(
+                selectedColor = MaterialTheme.colorScheme.primary
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }

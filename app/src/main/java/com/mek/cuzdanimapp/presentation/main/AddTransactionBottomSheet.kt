@@ -38,10 +38,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
+import com.mek.cuzdanimapp.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -76,7 +79,7 @@ fun AddTransactionBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "İşlem Ekle",
+                    text = stringResource(R.string.transaction_add_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -91,7 +94,10 @@ fun AddTransactionBottomSheet(
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    listOf("INCOME" to "Gelir", "EXPENSE" to "Gider").forEach { (type, label) ->
+                    listOf(
+                        "INCOME" to stringResource(R.string.transaction_type_income),
+                        "EXPENSE" to stringResource(R.string.transaction_type_expense)
+                    ).forEach { (type, label) ->
                         val isSelected = state.selectedType == type
                         Box(
                             modifier = Modifier
@@ -112,8 +118,8 @@ fun AddTransactionBottomSheet(
                                 fontSize = 14.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSelected) {
-                                    if (type == "INCOME") Color(0xFF4CAF50)
-                                    else Color(0xFFF44336)
+                                    if (type == "INCOME") MaterialTheme.appColors.income
+                                    else MaterialTheme.appColors.expense
                                 } else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -126,7 +132,7 @@ fun AddTransactionBottomSheet(
                     onValueChange = {
                         viewModel.onEvent(AddTransactionSheetEvent.AmountChanged(it))
                     },
-                    label = { Text("Tutar (₺)") },
+                    label = { Text(stringResource(R.string.transaction_amount_label)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     isError = state.errorMessage != null && state.amount.isBlank(),
@@ -139,7 +145,7 @@ fun AddTransactionBottomSheet(
 
                 // Kategori seçimi
                 Text(
-                    text = "Kategori",
+                    text = stringResource(R.string.transaction_category_label),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -192,7 +198,7 @@ fun AddTransactionBottomSheet(
                     onValueChange = {
                         viewModel.onEvent(AddTransactionSheetEvent.DescriptionChanged(it))
                     },
-                    label = { Text("Açıklama (opsiyonel)") },
+                    label = { Text(stringResource(R.string.transaction_description_label)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -209,13 +215,13 @@ fun AddTransactionBottomSheet(
                 ) {
                     Column {
                         Text(
-                            text = "Düzenli Ödeme",
+                            text = stringResource(R.string.transaction_recurring_label),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Otomatik tekrarlansın",
+                            text = stringResource(R.string.transaction_recurring_subtitle),
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -235,7 +241,7 @@ fun AddTransactionBottomSheet(
                 // Sıklık seçimi — sadece isRecurring true ise
                 if (state.isRecurring) {
                     Text(
-                        text = "Sıklık",
+                        text = stringResource(R.string.transaction_frequency_label),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -245,10 +251,10 @@ fun AddTransactionBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         listOf(
-                            "DAILY" to "Günlük",
-                            "WEEKLY" to "Haftalık",
-                            "MONTHLY" to "Aylık",
-                            "YEARLY" to "Yıllık"
+                            "DAILY" to stringResource(R.string.frequency_daily),
+                            "WEEKLY" to stringResource(R.string.frequency_weekly),
+                            "MONTHLY" to stringResource(R.string.frequency_monthly),
+                            "YEARLY" to stringResource(R.string.frequency_yearly)
                         ).forEach { (freq, label) ->
                             val isSelected = state.frequency == freq
                             Box(
@@ -297,9 +303,15 @@ fun AddTransactionBottomSheet(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Kaydet butonu
+                // Kaydet butonu - DEĞİŞEN KISIM BURASI
+                val resolvedCategoryName = if (state.selectedCategory.isNotEmpty()) {
+                    categoryDisplayName(state.selectedCategory)
+                } else {
+                    ""
+                }
+
                 Button(
-                    onClick = { viewModel.onEvent(AddTransactionSheetEvent.SaveClicked) },
+                    onClick = { viewModel.onEvent(AddTransactionSheetEvent.SaveClicked(resolvedCategoryName)) },
                     enabled = !state.isLoading,
                     shape = RoundedCornerShape(50.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -317,7 +329,7 @@ fun AddTransactionBottomSheet(
                         )
                     } else {
                         Text(
-                            text = "Kaydet",
+                            text = stringResource(R.string.transaction_save_action),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )

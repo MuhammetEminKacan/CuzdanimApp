@@ -46,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 
 @Composable
 fun LoginScreen(
@@ -63,6 +65,7 @@ fun LoginScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val verificationResentMessage = stringResource(R.string.login_verification_resent)
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -71,7 +74,7 @@ fun LoginScreen(
                 is LoginEffect.NavigateToRegister -> onNavigateToRegister()
                 is LoginEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
                 is LoginEffect.VerificationResent -> {
-                    snackbarHostState.showSnackbar("Doğrulama maili tekrar gönderildi!")
+                    snackbarHostState.showSnackbar(verificationResentMessage)
                 }
             }
         }
@@ -82,7 +85,6 @@ fun LoginScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Arkaplan degrade efekti (referans tasarımdaki atmospheric element)
         Box(
             modifier = Modifier
                 .size(300.dp)
@@ -105,9 +107,8 @@ fun LoginScreen(
                 .imePadding(),
             verticalArrangement = Arrangement.Center
         ) {
-            // Başlık
             Text(
-                text = "Cüzdanım",
+                text = stringResource(R.string.app_name),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -116,21 +117,20 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Tekrar hoş geldiniz",
+                text = stringResource(R.string.login_welcome_back),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Hesabınıza güvenli giriş yapın.",
+                text = stringResource(R.string.login_subtitle),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Kart
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -139,11 +139,10 @@ fun LoginScreen(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Email alanı
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
-                    label = { Text("E-posta") },
+                    label = { Text(stringResource(R.string.email_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
@@ -165,11 +164,10 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Şifre alanı
                 OutlinedTextField(
                     value = state.password,
                     onValueChange = { viewModel.onEvent(LoginEvent.PasswordChanged(it)) },
-                    label = { Text("Şifre") },
+                    label = { Text(stringResource(R.string.password_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
@@ -229,7 +227,7 @@ fun LoginScreen(
                         onClick = { viewModel.onEvent(LoginEvent.ResendVerification) }
                     ) {
                         Text(
-                            text = "Doğrulama mailini tekrar gönder →",
+                            text = stringResource(R.string.login_resend_verification),
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
@@ -239,7 +237,6 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Giriş butonu
                 Button(
                     onClick = {
                         keyboardController?.hide()
@@ -262,7 +259,7 @@ fun LoginScreen(
                         )
                     } else {
                         Text(
-                            text = "Giriş Yap",
+                            text = stringResource(R.string.login_action),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -272,14 +269,13 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Kayıt ol linki
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Hesabın yok mu?",
+                    text = stringResource(R.string.login_no_account),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
@@ -287,7 +283,7 @@ fun LoginScreen(
                     onClick = { viewModel.onEvent(LoginEvent.NavigateToRegister) }
                 ) {
                     Text(
-                        text = "Kayıt Ol",
+                        text = stringResource(R.string.register_action),
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp
@@ -296,7 +292,6 @@ fun LoginScreen(
             }
         }
 
-        // Snackbar
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
