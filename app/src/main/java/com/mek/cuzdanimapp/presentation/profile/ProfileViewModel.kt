@@ -2,6 +2,8 @@ package com.mek.cuzdanimapp.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mek.cuzdanimapp.data.local.LanguagePreferences
+import com.mek.cuzdanimapp.data.local.ThemePreferences
 import com.mek.cuzdanimapp.data.local.TokenManager
 import com.mek.cuzdanimapp.domain.usecase.profile.ChangePasswordUseCase
 import com.mek.cuzdanimapp.domain.usecase.profile.DeleteAccountUseCase
@@ -24,6 +26,8 @@ class ProfileViewModel @Inject constructor(
     private val updateProfileUseCase: UpdateProfileUseCase,
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val themePreferences: ThemePreferences,
+    private val languagePreferences: LanguagePreferences,
     private val tokenManager: TokenManager
 ) : ViewModel() {
 
@@ -33,8 +37,25 @@ class ProfileViewModel @Inject constructor(
     private val _effect = Channel<ProfileEffect>()
     val effect = _effect.receiveAsFlow()
 
+    val isDarkMode = themePreferences.isDarkMode
+
+    val currentLanguage = languagePreferences.languageCode
+
     init {
         onEvent(ProfileEvent.Load)
+    }
+
+    fun toggleDarkMode(enabled: Boolean) {
+        viewModelScope.launch {
+            themePreferences.setDarkMode(enabled)
+        }
+    }
+
+    fun setLanguage(code: String?) {
+        viewModelScope.launch {
+            languagePreferences.setLanguage(code)
+            _effect.send(ProfileEffect.LanguageChanged)
+        }
     }
 
     fun onEvent(event: ProfileEvent) {

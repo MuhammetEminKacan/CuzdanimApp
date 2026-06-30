@@ -6,4 +6,5 @@ sealed class ProfileEffect {
     data object PasswordChanged : ProfileEffect()
     data object LoggedOut : ProfileEffect()
     data object AccountDeleted : ProfileEffect()
+    data object LanguageChanged : ProfileEffect()
 }

@@ -44,14 +44,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.Transaction
 import com.mek.cuzdanimapp.presentation.main.categoryDisplayName
 import com.mek.cuzdanimapp.presentation.main.expenseCategories
 import com.mek.cuzdanimapp.presentation.main.incomeCategories
+import com.mek.cuzdanimapp.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,12 +65,14 @@ fun TransactionsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var transactionToDelete by remember { mutableStateOf<Long?>(null) }
 
+    val deletedMessage = stringResource(R.string.transaction_deleted)
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is TransactionEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
                 is TransactionEffect.TransactionDeleted -> {
-                    snackbarHostState.showSnackbar("İşlem silindi")
+                    snackbarHostState.showSnackbar(deletedMessage)
                 }
             }
         }
@@ -83,8 +87,8 @@ fun TransactionsScreen(
     transactionToDelete?.let { id ->
         AlertDialog(
             onDismissRequest = { transactionToDelete = null },
-            title = { Text("İşlemi Sil") },
-            text = { Text("Bu işlemi silmek istediğinize emin misiniz?") },
+            title = { Text(stringResource(R.string.transaction_delete_title)) },
+            text = { Text(stringResource(R.string.transaction_delete_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -92,12 +96,12 @@ fun TransactionsScreen(
                         transactionToDelete = null
                     }
                 ) {
-                    Text("Sil", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.budget_delete_action), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { transactionToDelete = null }) {
-                    Text("İptal")
+                    Text(stringResource(R.string.budget_cancel_action))
                 }
             }
         )
@@ -116,7 +120,7 @@ fun TransactionsScreen(
                 // Başlık
                 item {
                     Text(
-                        text = "İşlemler",
+                        text = stringResource(R.string.nav_transactions),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -126,13 +130,16 @@ fun TransactionsScreen(
 
                 // Tip filtresi
                 item {
+                    val allLabel = stringResource(R.string.filter_all)
+                    val incomeLabel = stringResource(R.string.transaction_type_income)
+                    val expenseLabel = stringResource(R.string.transaction_type_expense)
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val typeFilters = listOf(
-                            "ALL" to "Tümü",
-                            "INCOME" to "Gelir",
-                            "EXPENSE" to "Gider"
+                            "ALL" to allLabel,
+                            "INCOME" to incomeLabel,
+                            "EXPENSE" to expenseLabel
                         )
                         items(typeFilters) { (type, label) ->
                             FilterChip(
@@ -169,7 +176,7 @@ fun TransactionsScreen(
                                         TransactionEvent.CategoryFilterChanged("ALL")
                                     )
                                 },
-                                label = { Text("Tüm Kategoriler") },
+                                label = { Text(stringResource(R.string.filter_all_categories)) },
                                 colors = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = MaterialTheme.colorScheme.secondary,
                                     selectedLabelColor = MaterialTheme.colorScheme.onSecondary
@@ -204,7 +211,7 @@ fun TransactionsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "İşlem bulunamadı",
+                                text = stringResource(R.string.transaction_empty_message),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
@@ -267,8 +274,8 @@ private fun TransactionCard(
                         .size(48.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(
-                            if (isIncome) Color(0xFF4CAF50).copy(alpha = 0.1f)
-                            else Color(0xFFF44336).copy(alpha = 0.1f)
+                            if (isIncome) MaterialTheme.appColors.income.copy(alpha = 0.1f)
+                            else MaterialTheme.appColors.expense.copy(alpha = 0.1f)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -276,7 +283,7 @@ private fun TransactionCard(
                         text = categoryDisplayName(transaction.category).first().toString(),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
                     )
                 }
 
@@ -308,28 +315,29 @@ private fun TransactionCard(
             ) {
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "${if (isIncome) "+" else "-"}₺${
+                        text = stringResource(
+                            if (isIncome) R.string.dashboard_income_format else R.string.dashboard_expense_format,
                             String.format("%.2f", transaction.amount)
-                        }",
+                        ),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
                     )
 
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
                             .background(
-                                if (isIncome) Color(0xFF4CAF50).copy(alpha = 0.1f)
-                                else Color(0xFFF44336).copy(alpha = 0.1f)
+                                if (isIncome) MaterialTheme.appColors.income.copy(alpha = 0.1f)
+                                else MaterialTheme.appColors.expense.copy(alpha = 0.1f)
                             )
                             .padding(horizontal = 8.dp, vertical = 2.dp)
                     ) {
                         Text(
-                            text = if (isIncome) "GELİR" else "GİDER",
+                            text = if (isIncome) stringResource(R.string.label_income_caps) else stringResource(R.string.label_expense_caps),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+                            color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
                         )
                     }
                 }
@@ -340,7 +348,7 @@ private fun TransactionCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Sil",
+                        contentDescription = stringResource(R.string.budget_delete_action),
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)
                     )

@@ -58,13 +58,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.Budget
 import com.mek.cuzdanimapp.presentation.main.categoryDisplayName
 import com.mek.cuzdanimapp.presentation.main.expenseCategories
+import com.mek.cuzdanimapp.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -75,12 +78,15 @@ fun BudgetScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var budgetToDelete by remember { mutableStateOf<Long?>(null) }
 
+    val savedMessage = stringResource(R.string.budget_saved)
+    val deletedMessage = stringResource(R.string.budget_deleted)
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is BudgetEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
-                is BudgetEffect.Saved -> snackbarHostState.showSnackbar("Bütçe kaydedildi")
-                is BudgetEffect.Deleted -> snackbarHostState.showSnackbar("Bütçe silindi")
+                is BudgetEffect.Saved -> snackbarHostState.showSnackbar(savedMessage)
+                is BudgetEffect.Deleted -> snackbarHostState.showSnackbar(deletedMessage)
             }
         }
     }
@@ -88,8 +94,8 @@ fun BudgetScreen(
     budgetToDelete?.let { id ->
         AlertDialog(
             onDismissRequest = { budgetToDelete = null },
-            title = { Text("Bütçeyi Sil") },
-            text = { Text("Bu bütçeyi silmek istediğinize emin misiniz?") },
+            title = { Text(stringResource(R.string.budget_delete_title)) },
+            text = { Text(stringResource(R.string.budget_delete_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -97,12 +103,12 @@ fun BudgetScreen(
                         budgetToDelete = null
                     }
                 ) {
-                    Text("Sil", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.budget_delete_action), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { budgetToDelete = null }) {
-                    Text("İptal")
+                    Text(stringResource(R.string.budget_cancel_action))
                 }
             }
         )
@@ -124,7 +130,7 @@ fun BudgetScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = if (state.editingBudget != null) "Bütçeyi Düzenle" else "Bütçe Ekle",
+                    text = if (state.editingBudget != null) stringResource(R.string.budget_edit_title) else stringResource(R.string.budget_add_title),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -133,7 +139,7 @@ fun BudgetScreen(
                 // Kategori seçimi — sadece yeni eklemede göster
                 if (state.editingBudget == null) {
                     Text(
-                        text = "Kategori",
+                        text = stringResource(R.string.budget_category_label),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -180,7 +186,7 @@ fun BudgetScreen(
                 OutlinedTextField(
                     value = state.limitAmount,
                     onValueChange = { viewModel.onEvent(BudgetEvent.LimitChanged(it)) },
-                    label = { Text("Aylık Limit (₺)") },
+                    label = { Text(stringResource(R.string.budget_limit_label)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
                     isError = state.sheetErrorMessage != null,
@@ -220,7 +226,7 @@ fun BudgetScreen(
                         )
                     } else {
                         Text(
-                            text = "Kaydet",
+                            text = stringResource(R.string.budget_save_action),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -247,7 +253,7 @@ fun BudgetScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Bütçeler",
+                            text = stringResource(R.string.budget_screen_title),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -259,7 +265,7 @@ fun BudgetScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Bütçe Ekle",
+                                contentDescription = stringResource(R.string.budget_add_title),
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -277,7 +283,7 @@ fun BudgetScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Henüz bütçe eklenmedi",
+                                text = stringResource(R.string.budget_empty_message),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
@@ -311,9 +317,9 @@ private fun BudgetCard(
     onDeleteClick: () -> Unit
 ) {
     val usageColor = when {
-        budget.usagePercentage >= 90 -> Color(0xFFF44336)
-        budget.usagePercentage >= 70 -> Color(0xFFFF9800)
-        else -> Color(0xFF4CAF50)
+        budget.usagePercentage >= 90 -> MaterialTheme.appColors.expense
+        budget.usagePercentage >= 70 -> MaterialTheme.appColors.warning
+        else -> MaterialTheme.appColors.income
     }
 
     Card(
@@ -349,7 +355,7 @@ private fun BudgetCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = "Düzenle",
+                            contentDescription = stringResource(R.string.budget_edit_action),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -360,7 +366,7 @@ private fun BudgetCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Sil",
+                            contentDescription = stringResource(R.string.budget_delete_action),
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
                         )
@@ -385,12 +391,12 @@ private fun BudgetCard(
             ) {
                 Column {
                     Text(
-                        text = "Harcanan",
+                        text = stringResource(R.string.budget_spent_label),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "₺${String.format("%.2f", budget.spentAmount)}",
+                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.spentAmount)),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = usageColor
@@ -398,12 +404,12 @@ private fun BudgetCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Limit",
+                        text = stringResource(R.string.budget_limit_title),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "₺${String.format("%.2f", budget.monthlyLimit)}",
+                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.monthlyLimit)),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -411,33 +417,32 @@ private fun BudgetCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = "Kalan",
+                        text = stringResource(R.string.budget_remaining_label),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "₺${String.format("%.2f", budget.remainingAmount)}",
+                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.remainingAmount)),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (budget.remainingAmount < 0) Color(0xFFF44336)
+                        color = if (budget.remainingAmount < 0) MaterialTheme.appColors.expense
                         else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
 
-            // Uyarı mesajı
             if (budget.usagePercentage >= 90) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFF44336).copy(alpha = 0.1f))
+                        .background(MaterialTheme.appColors.expense.copy(alpha = 0.1f))
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "⚠️ Bütçenizin %${budget.usagePercentage.toInt()}'ini kullandınız!",
+                        text = stringResource(R.string.budget_warning_critical, budget.usagePercentage.toInt()),
                         fontSize = 12.sp,
-                        color = Color(0xFFF44336),
+                        color = MaterialTheme.appColors.expense,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
@@ -446,13 +451,13 @@ private fun BudgetCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFFF9800).copy(alpha = 0.1f))
+                        .background(MaterialTheme.appColors.warning.copy(alpha = 0.1f))
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "Bütçenizin %${budget.usagePercentage.toInt()}'ini kullandınız",
+                        text = stringResource(R.string.budget_warning_warning, budget.usagePercentage.toInt()),
                         fontSize = 12.sp,
-                        color = Color(0xFFFF9800),
+                        color = MaterialTheme.appColors.warning,
                         fontWeight = FontWeight.SemiBold
                     )
                 }

@@ -6,6 +6,7 @@
 
     <application
         android:name=".CuzdanimApp"
+        android:localeConfig="@xml/locales_config"
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"

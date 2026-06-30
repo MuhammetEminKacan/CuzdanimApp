@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.CurrencyType
 
 @Composable
@@ -65,6 +67,7 @@ fun RegisterScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val verificationSentMessage = stringResource(R.string.register_verification_sent)
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -73,9 +76,7 @@ fun RegisterScreen(
                 is RegisterEffect.NavigateToLogin -> onNavigateToLogin()
                 is RegisterEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
                 is RegisterEffect.ShowVerificationMessage -> {
-                    snackbarHostState.showSnackbar(
-                        "Doğrulama maili gönderildi! Mailinizi onayladıktan sonra giriş yapabilirsiniz."
-                    )
+                    snackbarHostState.showSnackbar(verificationSentMessage)
                     onNavigateToLogin()
                 }
             }
@@ -96,7 +97,7 @@ fun RegisterScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Cüzdanım",
+                text = stringResource(R.string.app_name),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -105,14 +106,14 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Hesap Oluştur",
+                text = stringResource(R.string.register_title),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Finansal hedeflerinizi takip etmeye başlayın.",
+                text = stringResource(R.string.register_subtitle),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -127,11 +128,10 @@ fun RegisterScreen(
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Ad Soyad
                 OutlinedTextField(
                     value = state.fullName,
                     onValueChange = { viewModel.onEvent(RegisterEvent.FullNameChanged(it)) },
-                    label = { Text("Ad Soyad") },
+                    label = { Text(stringResource(R.string.register_full_name_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Person,
@@ -150,11 +150,10 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Email
                 OutlinedTextField(
                     value = state.email,
                     onValueChange = { viewModel.onEvent(RegisterEvent.EmailChanged(it)) },
-                    label = { Text("E-posta") },
+                    label = { Text(stringResource(R.string.email_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Email,
@@ -176,11 +175,10 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Şifre
                 OutlinedTextField(
                     value = state.password,
                     onValueChange = { viewModel.onEvent(RegisterEvent.PasswordChanged(it)) },
-                    label = { Text("Şifre") },
+                    label = { Text(stringResource(R.string.password_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
@@ -220,11 +218,10 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Şifre tekrar
                 OutlinedTextField(
                     value = state.confirmPassword,
                     onValueChange = { viewModel.onEvent(RegisterEvent.ConfirmPasswordChanged(it)) },
-                    label = { Text("Şifre Tekrar") },
+                    label = { Text(stringResource(R.string.register_confirm_password_label)) },
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Lock,
@@ -264,9 +261,8 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // Para birimi seçimi
                 Text(
-                    text = "Para Birimi",
+                    text = stringResource(R.string.register_currency_label),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -308,7 +304,6 @@ fun RegisterScreen(
                     }
                 }
 
-                // Hata mesajı
                 if (state.errorMessage != null) {
                     Text(
                         text = state.errorMessage!!,
@@ -320,7 +315,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Kayıt ol butonu
                 Button(
                     onClick = {
                         keyboardController?.hide()
@@ -343,7 +337,7 @@ fun RegisterScreen(
                         )
                     } else {
                         Text(
-                            text = "Kayıt Ol",
+                            text = stringResource(R.string.register_action),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -359,7 +353,7 @@ fun RegisterScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Zaten hesabın var mı?",
+                    text = stringResource(R.string.register_have_account),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
@@ -367,7 +361,7 @@ fun RegisterScreen(
                     onClick = { viewModel.onEvent(RegisterEvent.NavigateToLogin) }
                 ) {
                     Text(
-                        text = "Giriş Yap",
+                        text = stringResource(R.string.login_action),
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp

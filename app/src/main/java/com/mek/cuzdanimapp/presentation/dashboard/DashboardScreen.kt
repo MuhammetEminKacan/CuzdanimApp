@@ -43,12 +43,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.DashboardData
 import com.mek.cuzdanimapp.domain.model.RecurringPayment
 import com.mek.cuzdanimapp.domain.model.Transaction
+import com.mek.cuzdanimapp.ui.theme.appColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,7 +116,7 @@ private fun DashboardContent(data: DashboardData) {
         // Upcoming Payments
         if (data.upcomingPayments.isNotEmpty()) {
             item {
-                SectionHeader(title = "Yaklaşan Ödemeler", onSeeAll = {})
+                SectionHeader(title = stringResource(R.string.dashboard_upcoming_payments), onSeeAll = {})
             }
             item {
                 LazyRow(
@@ -129,7 +132,7 @@ private fun DashboardContent(data: DashboardData) {
         // Recent Transactions
         if (data.recentTransactions.isNotEmpty()) {
             item {
-                SectionHeader(title = "Son İşlemler", onSeeAll = {})
+                SectionHeader(title = stringResource(R.string.dashboard_recent_transactions), onSeeAll = {})
             }
             item {
                 Card(
@@ -159,8 +162,8 @@ private fun BalanceCard(data: DashboardData) {
             .background(
                 brush = Brush.linearGradient(
                     colors = listOf(
-                        Color(0xFF003527),
-                        Color(0xFF1d3989)
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
                     )
                 )
             )
@@ -168,13 +171,13 @@ private fun BalanceCard(data: DashboardData) {
     ) {
         Column {
             Text(
-                text = "Toplam Bakiye",
+                text = stringResource(R.string.dashboard_total_balance),
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.7f)
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "₺${String.format("%.2f", data.totalBalance)}",
+                text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.totalBalance)),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -195,24 +198,24 @@ private fun BalanceCard(data: DashboardData) {
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF4CAF50).copy(alpha = 0.2f)),
+                            .background(MaterialTheme.appColors.income.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowDownward,
                             contentDescription = null,
-                            tint = Color(0xFF4CAF50),
+                            tint = MaterialTheme.appColors.income,
                             modifier = Modifier.size(16.dp)
                         )
                     }
                     Column {
                         Text(
-                            text = "Gelir",
+                            text = stringResource(R.string.dashboard_income_label),
                             fontSize = 11.sp,
                             color = Color.White.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = "₺${String.format("%.2f", data.monthlyIncome)}",
+                            text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.monthlyIncome)),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -229,24 +232,24 @@ private fun BalanceCard(data: DashboardData) {
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFFF44336).copy(alpha = 0.2f)),
+                            .background(MaterialTheme.appColors.expense.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowUpward,
                             contentDescription = null,
-                            tint = Color(0xFFF44336),
+                            tint = MaterialTheme.appColors.expense,
                             modifier = Modifier.size(16.dp)
                         )
                     }
                     Column {
                         Text(
-                            text = "Gider",
+                            text = stringResource(R.string.dashboard_expense_label),
                             fontSize = 11.sp,
                             color = Color.White.copy(alpha = 0.7f)
                         )
                         Text(
-                            text = "₺${String.format("%.2f", data.monthlyExpense)}",
+                            text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.monthlyExpense)),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.White
@@ -276,7 +279,7 @@ private fun SectionHeader(
         )
         TextButton(onClick = onSeeAll) {
             Text(
-                text = "Tümünü Gör",
+                text = stringResource(R.string.dashboard_see_all),
                 color = MaterialTheme.colorScheme.secondary,
                 fontSize = 14.sp
             )
@@ -327,7 +330,7 @@ private fun UpcomingPaymentCard(payment: RecurringPayment) {
             )
 
             Text(
-                text = "₺${String.format("%.2f", payment.amount)}",
+                text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", payment.amount)),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -382,10 +385,13 @@ private fun TransactionItem(transaction: Transaction) {
         }
 
         Text(
-            text = "${if (isIncome) "+" else "-"}₺${String.format("%.2f", transaction.amount)}",
+            text = stringResource(
+                if (isIncome) R.string.dashboard_income_format else R.string.dashboard_expense_format,
+                String.format("%.2f", transaction.amount)
+            ),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isIncome) Color(0xFF4CAF50) else Color(0xFFF44336)
+            color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
         )
     }
 }

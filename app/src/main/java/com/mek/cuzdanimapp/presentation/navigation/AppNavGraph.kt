@@ -7,9 +7,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.presentation.auth.login.LoginEvent
 import com.mek.cuzdanimapp.presentation.auth.login.LoginScreen
 import com.mek.cuzdanimapp.presentation.auth.login.LoginViewModel
@@ -167,7 +169,7 @@ fun AppNavGraph(
                     RecurringPaymentsScreen(viewModel = viewModel)
                 }
             }
-            else -> NavEntry(route) { Text("Bilinmeyen ekran") }
+            else -> NavEntry(route) { Text(stringResource(R.string.navigation_unknown_screen)) }
         }
     }
 

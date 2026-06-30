@@ -9,16 +9,18 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
+import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.presentation.navigation.bottomNavItems
 
 @Composable
@@ -35,18 +37,20 @@ fun MainScreen(
                 tonalElevation = 0.dp
             ) {
                 bottomNavItems.forEach { item ->
+                    val itemLabel = stringResource(item.labelRes)
+
                     NavigationBarItem(
                         selected = currentRoute == item.route,
                         onClick = { onNavigate(item.route) },
                         icon = {
                             Icon(
                                 imageVector = item.icon,
-                                contentDescription = item.label
+                                contentDescription = itemLabel
                             )
                         },
                         label = {
                             Text(
-                                text = item.label,
+                                text = itemLabel,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         },
@@ -55,7 +59,7 @@ fun MainScreen(
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            unselectedTextColor = MaterialTheme.colorScheme.surfaceContainerLow
                         )
                     )
                 }
@@ -70,7 +74,7 @@ fun MainScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "İşlem Ekle"
+                    contentDescription = stringResource(R.string.transaction_add_title)
                 )
             }
         },
