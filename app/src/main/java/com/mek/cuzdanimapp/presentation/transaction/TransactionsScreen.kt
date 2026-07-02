@@ -59,7 +59,6 @@ import com.mek.cuzdanimapp.ui.theme.appColors
 @Composable
 fun TransactionsScreen(
     viewModel: TransactionViewModel,
-    onTransactionAdded: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -76,11 +75,6 @@ fun TransactionsScreen(
                 }
             }
         }
-    }
-
-    // İşlem eklendikten sonra listeyi yenile
-    LaunchedEffect(onTransactionAdded) {
-        viewModel.onEvent(TransactionEvent.Refresh)
     }
 
     // Silme dialog'u

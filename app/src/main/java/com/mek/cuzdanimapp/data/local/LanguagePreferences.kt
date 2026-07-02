@@ -16,17 +16,17 @@ val Context.languageDataStore by preferencesDataStore(name = "language_prefs")
 class LanguagePreferences @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) {
-    private val LANGUAGE_KEY = stringPreferencesKey("language_code")
+    private val languageKey = stringPreferencesKey("language_code")
 
     val languageCode: Flow<String?> = context.languageDataStore.data
-        .map { preferences -> preferences[LANGUAGE_KEY] }
+        .map { preferences -> preferences[languageKey] }
 
     suspend fun setLanguage(code: String?) {
         context.languageDataStore.edit { preferences ->
             if (code == null) {
-                preferences.remove(LANGUAGE_KEY)
+                preferences.remove(languageKey)
             } else {
-                preferences[LANGUAGE_KEY] = code
+                preferences[languageKey] = code
             }
         }
     }

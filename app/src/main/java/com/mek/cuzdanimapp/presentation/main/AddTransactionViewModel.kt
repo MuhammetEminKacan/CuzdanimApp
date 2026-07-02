@@ -66,7 +66,7 @@ class AddTransactionViewModel @Inject constructor(
         }
     }
 
-    private fun save(categoryDisplayName: String) { // DEĞİŞTİ
+    private fun save(categoryDisplayName: String) {
         val state = _state.value
 
         if (state.selectedCategory.isEmpty()) {
@@ -84,10 +84,7 @@ class AddTransactionViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
             val result = if (state.isRecurring) {
-                // UI'dan hazır çevrilmiş olarak gelen categoryDisplayName'i kullandık
-                val title = state.description.ifBlank {
-                    categoryDisplayName
-                }
+                val title = state.description.ifBlank { state.selectedCategory }
                 createRecurringPaymentUseCase(
                     title = title,
                     description = state.description.ifBlank { null },
@@ -110,7 +107,11 @@ class AddTransactionViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false, isVisible = false) }
-                    transactionEventBus.emit(TransactionEventBus.TransactionEvent.TransactionAdded)
+                    if (state.isRecurring) {
+                        transactionEventBus.emit(TransactionEventBus.TransactionEvent.RecurringPaymentAdded)
+                    } else {
+                        transactionEventBus.emit(TransactionEventBus.TransactionEvent.TransactionAdded)
+                    }
                     _effect.send(AddTransactionSheetEffect.TransactionAdded)
                 }
                 is Resource.Error -> {

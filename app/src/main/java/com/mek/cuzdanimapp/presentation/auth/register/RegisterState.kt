@@ -11,5 +11,6 @@ data class RegisterState(
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
+    val errorCode: String? = null,
     val errorMessage: String? = null
 )

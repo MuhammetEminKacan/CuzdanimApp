@@ -12,4 +12,5 @@ sealed class RegisterEvent {
     data object ToggleConfirmPasswordVisibility : RegisterEvent()
     data object RegisterClicked : RegisterEvent()
     data object NavigateToLogin : RegisterEvent()
+    data object ClearState : RegisterEvent()
 }

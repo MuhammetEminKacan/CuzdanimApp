@@ -26,9 +26,9 @@ class ProfileViewModel @Inject constructor(
     private val updateProfileUseCase: UpdateProfileUseCase,
     private val changePasswordUseCase: ChangePasswordUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val tokenManager: TokenManager,
     private val themePreferences: ThemePreferences,
-    private val languagePreferences: LanguagePreferences,
-    private val tokenManager: TokenManager
+    private val languagePreferences: LanguagePreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ProfileState())
@@ -38,24 +38,10 @@ class ProfileViewModel @Inject constructor(
     val effect = _effect.receiveAsFlow()
 
     val isDarkMode = themePreferences.isDarkMode
-
     val currentLanguage = languagePreferences.languageCode
 
     init {
         onEvent(ProfileEvent.Load)
-    }
-
-    fun toggleDarkMode(enabled: Boolean) {
-        viewModelScope.launch {
-            themePreferences.setDarkMode(enabled)
-        }
-    }
-
-    fun setLanguage(code: String?) {
-        viewModelScope.launch {
-            languagePreferences.setLanguage(code)
-            _effect.send(ProfileEffect.LanguageChanged)
-        }
     }
 
     fun onEvent(event: ProfileEvent) {
@@ -68,6 +54,7 @@ class ProfileViewModel @Inject constructor(
                         isEditSheetVisible = true,
                         fullName = it.user?.fullName ?: "",
                         selectedCurrency = it.user?.currency?.name ?: "TRY",
+                        sheetErrorCode = null,
                         sheetErrorMessage = null
                     )
                 }
@@ -84,6 +71,7 @@ class ProfileViewModel @Inject constructor(
                         oldPassword = "",
                         newPassword = "",
                         confirmPassword = "",
+                        sheetErrorCode = null,
                         sheetErrorMessage = null
                     )
                 }
@@ -93,8 +81,23 @@ class ProfileViewModel @Inject constructor(
                 _state.update { it.copy(isPasswordSheetVisible = false) }
             }
 
+            is ProfileEvent.ShowDeleteSheet -> {
+                _state.update {
+                    it.copy(
+                        isDeleteSheetVisible = true,
+                        deletePassword = "",
+                        sheetErrorCode = null,
+                        sheetErrorMessage = null
+                    )
+                }
+            }
+
+            is ProfileEvent.HideDeleteSheet -> {
+                _state.update { it.copy(isDeleteSheetVisible = false) }
+            }
+
             is ProfileEvent.FullNameChanged -> {
-                _state.update { it.copy(fullName = event.fullName, sheetErrorMessage = null) }
+                _state.update { it.copy(fullName = event.fullName, sheetErrorCode = null, sheetErrorMessage = null) }
             }
 
             is ProfileEvent.CurrencyChanged -> {
@@ -102,15 +105,19 @@ class ProfileViewModel @Inject constructor(
             }
 
             is ProfileEvent.OldPasswordChanged -> {
-                _state.update { it.copy(oldPassword = event.password, sheetErrorMessage = null) }
+                _state.update { it.copy(oldPassword = event.password, sheetErrorCode = null, sheetErrorMessage = null) }
             }
 
             is ProfileEvent.NewPasswordChanged -> {
-                _state.update { it.copy(newPassword = event.password, sheetErrorMessage = null) }
+                _state.update { it.copy(newPassword = event.password, sheetErrorCode = null, sheetErrorMessage = null) }
             }
 
             is ProfileEvent.ConfirmPasswordChanged -> {
-                _state.update { it.copy(confirmPassword = event.password, sheetErrorMessage = null) }
+                _state.update { it.copy(confirmPassword = event.password, sheetErrorCode = null, sheetErrorMessage = null) }
+            }
+
+            is ProfileEvent.DeletePasswordChanged -> {
+                _state.update { it.copy(deletePassword = event.password, sheetErrorCode = null, sheetErrorMessage = null) }
             }
 
             is ProfileEvent.TogglePasswordVisibility -> {
@@ -120,52 +127,28 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.ToggleNewPasswordVisibility -> {
                 _state.update { it.copy(isNewPasswordVisible = !it.isNewPasswordVisible) }
             }
-            is ProfileEvent.ShowDeleteSheet -> {
-                _state.update {
-                    it.copy(
-                        isDeleteSheetVisible = true,
-                        deletePassword = "",
-                        sheetErrorMessage = null
-                    )
-                }
-            }
-            is ProfileEvent.HideDeleteSheet -> {
-                _state.update { it.copy(isDeleteSheetVisible = false) }
-            }
-            is ProfileEvent.DeletePasswordChanged -> {
-                _state.update { it.copy(deletePassword = event.password, sheetErrorMessage = null) }
-            }
+
             is ProfileEvent.ToggleDeletePasswordVisibility -> {
                 _state.update { it.copy(isDeletePasswordVisible = !it.isDeletePasswordVisible) }
             }
-            is ProfileEvent.ConfirmDeleteAccount -> deleteAccount()
+
             is ProfileEvent.SaveProfile -> saveProfile()
             is ProfileEvent.SavePassword -> savePassword()
             is ProfileEvent.Logout -> logout()
+            is ProfileEvent.ConfirmDeleteAccount -> deleteAccount()
         }
     }
 
-    private fun deleteAccount() {
-        val state = _state.value
-        if (state.deletePassword.isBlank()) {
-            _state.update { it.copy(sheetErrorMessage = "Şifrenizi giriniz") }
-            return
-        }
-
+    fun toggleDarkMode(enabled: Boolean) {
         viewModelScope.launch {
-            _state.update { it.copy(isSheetLoading = true, sheetErrorMessage = null) }
-            when (val result = deleteAccountUseCase(state.deletePassword)) {
-                is Resource.Success -> {
-                    tokenManager.clearTokens()
-                    _state.update { it.copy(isSheetLoading = false, isDeleteSheetVisible = false) }
-                    _effect.send(ProfileEffect.AccountDeleted)
-                }
-                is Resource.Error -> {
-                    _state.update { it.copy(isSheetLoading = false) }
-                    _effect.send(ProfileEffect.ShowError(result.message ?: "Silinemedi"))
-                }
-                is Resource.Loading -> Unit
-            }
+            themePreferences.setDarkMode(enabled)
+        }
+    }
+
+    fun setLanguage(code: String?) {
+        viewModelScope.launch {
+            languagePreferences.setLanguage(code)
+            _effect.send(ProfileEffect.LanguageChanged)
         }
     }
 
@@ -174,13 +157,11 @@ class ProfileViewModel @Inject constructor(
             _state.update { it.copy(isLoading = true) }
             when (val result = getProfileUseCase()) {
                 is Resource.Success -> {
-                    _state.update {
-                        it.copy(isLoading = false, user = result.data)
-                    }
+                    _state.update { it.copy(isLoading = false, user = result.data) }
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    _effect.send(ProfileEffect.ShowError(result.message ?: "Hata"))
+                    _effect.send(ProfileEffect.ShowError(result.message ?: ""))
                 }
                 is Resource.Loading -> Unit
             }
@@ -189,13 +170,14 @@ class ProfileViewModel @Inject constructor(
 
     private fun saveProfile() {
         val state = _state.value
+
         if (state.fullName.isBlank()) {
-            _state.update { it.copy(sheetErrorMessage = "Ad soyad boş bırakılamaz") }
+            _state.update { it.copy(sheetErrorCode = "LOCAL_FULLNAME_EMPTY") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isSheetLoading = true, sheetErrorMessage = null) }
+            _state.update { it.copy(isSheetLoading = true, sheetErrorCode = null, sheetErrorMessage = null) }
             when (val result = updateProfileUseCase(state.fullName, state.selectedCurrency)) {
                 is Resource.Success -> {
                     _state.update {
@@ -208,8 +190,13 @@ class ProfileViewModel @Inject constructor(
                     _effect.send(ProfileEffect.ProfileUpdated)
                 }
                 is Resource.Error -> {
-                    _state.update { it.copy(isSheetLoading = false) }
-                    _effect.send(ProfileEffect.ShowError(result.message ?: "Güncellenemedi"))
+                    val code = result.message ?: "UNKNOWN"
+                    _state.update {
+                        it.copy(
+                            isSheetLoading = false,
+                            sheetErrorCode = code
+                        )
+                    }
                 }
                 is Resource.Loading -> Unit
             }
@@ -218,21 +205,26 @@ class ProfileViewModel @Inject constructor(
 
     private fun savePassword() {
         val state = _state.value
-        if (state.oldPassword.isBlank() || state.newPassword.isBlank()) {
-            _state.update { it.copy(sheetErrorMessage = "Tüm alanları doldurunuz") }
+
+        if (state.oldPassword.isBlank()) {
+            _state.update { it.copy(sheetErrorCode = "LOCAL_OLD_PASSWORD_EMPTY") }
+            return
+        }
+        if (state.newPassword.isBlank()) {
+            _state.update { it.copy(sheetErrorCode = "LOCAL_NEW_PASSWORD_EMPTY") }
             return
         }
         if (state.newPassword.length < 8) {
-            _state.update { it.copy(sheetErrorMessage = "Şifre en az 8 karakter olmalı") }
+            _state.update { it.copy(sheetErrorCode = "LOCAL_PASSWORD_SHORT") }
             return
         }
         if (state.newPassword != state.confirmPassword) {
-            _state.update { it.copy(sheetErrorMessage = "Şifreler eşleşmiyor") }
+            _state.update { it.copy(sheetErrorCode = "LOCAL_PASSWORD_MISMATCH") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isSheetLoading = true, sheetErrorMessage = null) }
+            _state.update { it.copy(isSheetLoading = true, sheetErrorCode = null, sheetErrorMessage = null) }
             when (val result = changePasswordUseCase(
                 state.oldPassword, state.newPassword, state.confirmPassword
             )) {
@@ -243,8 +235,43 @@ class ProfileViewModel @Inject constructor(
                     _effect.send(ProfileEffect.PasswordChanged)
                 }
                 is Resource.Error -> {
-                    _state.update { it.copy(isSheetLoading = false) }
-                    _effect.send(ProfileEffect.ShowError(result.message ?: "Değiştirilemedi"))
+                    val code = result.message ?: "UNKNOWN"
+                    _state.update {
+                        it.copy(
+                            isSheetLoading = false,
+                            sheetErrorCode = code
+                        )
+                    }
+                }
+                is Resource.Loading -> Unit
+            }
+        }
+    }
+
+    private fun deleteAccount() {
+        val state = _state.value
+
+        if (state.deletePassword.isBlank()) {
+            _state.update { it.copy(sheetErrorCode = "LOCAL_DELETE_PASSWORD_EMPTY") }
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isSheetLoading = true, sheetErrorCode = null, sheetErrorMessage = null) }
+            when (val result = deleteAccountUseCase(state.deletePassword)) {
+                is Resource.Success -> {
+                    tokenManager.clearTokens()
+                    _state.update { it.copy(isSheetLoading = false, isDeleteSheetVisible = false) }
+                    _effect.send(ProfileEffect.AccountDeleted)
+                }
+                is Resource.Error -> {
+                    val code = result.message ?: "UNKNOWN"
+                    _state.update {
+                        it.copy(
+                            isSheetLoading = false,
+                            sheetErrorCode = code
+                        )
+                    }
                 }
                 is Resource.Loading -> Unit
             }

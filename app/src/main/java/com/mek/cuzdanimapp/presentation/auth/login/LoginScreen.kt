@@ -65,7 +65,8 @@ fun LoginScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val verificationResentMessage = stringResource(R.string.login_verification_resent)
+
+    val errorText = loginErrorMessage(state.errorCode)
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -73,9 +74,6 @@ fun LoginScreen(
                 is LoginEffect.NavigateToDashboard -> onNavigateToDashboard()
                 is LoginEffect.NavigateToRegister -> onNavigateToRegister()
                 is LoginEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
-                is LoginEffect.VerificationResent -> {
-                    snackbarHostState.showSnackbar(verificationResentMessage)
-                }
             }
         }
     }
@@ -155,7 +153,7 @@ fun LoginScreen(
                         imeAction = ImeAction.Next
                     ),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -204,7 +202,7 @@ fun LoginScreen(
                         }
                     ),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -213,26 +211,13 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (state.errorMessage != null) {
+                if (errorText != null) {
                     Text(
-                        text = state.errorMessage!!,
+                        text = errorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
                     )
-                }
-
-                if (state.showResendOption) {
-                    TextButton(
-                        onClick = { viewModel.onEvent(LoginEvent.ResendVerification) }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.login_resend_verification),
-                            color = MaterialTheme.colorScheme.primary,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -302,5 +287,18 @@ fun LoginScreen(
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
             )
         }
+    }
+}
+
+@Composable
+private fun loginErrorMessage(code: String?): String? {
+    return when (code) {
+        "2001" -> stringResource(R.string.error_invalid_credentials)
+        "7001" -> stringResource(R.string.error_email_not_verified)
+        "LOCAL_EMAIL_EMPTY" -> stringResource(R.string.error_email_empty)
+        "LOCAL_PASSWORD_EMPTY" -> stringResource(R.string.error_password_empty)
+        "CONNECTION_ERROR" -> stringResource(R.string.error_connection)
+        null -> null
+        else -> stringResource(R.string.error_generic)
     }
 }

@@ -43,6 +43,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -80,13 +81,13 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     onLoggedOut: () -> Unit
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     val isDarkMode by viewModel.isDarkMode.collectAsState(initial = false)
     val currentLanguage by viewModel.currentLanguage.collectAsState(initial = null)
-    var showLanguageDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     val profileUpdatedMessage = stringResource(R.string.profile_updated)
     val passwordChangedMessage = stringResource(R.string.profile_password_changed)
@@ -106,7 +107,9 @@ fun ProfileScreen(
         }
     }
 
+    // Delete Account Sheet
     if (state.isDeleteSheetVisible) {
+        val deleteErrorText = profileSheetErrorMessage(state.sheetErrorCode)
         ModalBottomSheet(
             onDismissRequest = { viewModel.onEvent(ProfileEvent.HideDeleteSheet) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -120,14 +123,14 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.profile_delete_account_title),
+                    text = stringResource(R.string.profile_delete_account),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.error
                 )
 
                 Text(
-                    text = stringResource(R.string.profile_delete_account_warning),
+                    text = stringResource(R.string.profile_delete_warning),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -135,7 +138,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.deletePassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.DeletePasswordChanged(it)) },
-                    label = { Text(stringResource(R.string.profile_enter_password_label)) },
+                    label = { Text(stringResource(R.string.profile_enter_password)) },
                     visualTransformation = if (state.isDeletePasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -151,7 +154,7 @@ fun ProfileScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
-                    isError = state.sheetErrorMessage != null,
+                    isError = deleteErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.error,
@@ -160,9 +163,9 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (state.sheetErrorMessage != null) {
+                if (deleteErrorText != null) {
                     Text(
-                        text = state.sheetErrorMessage!!,
+                        text = deleteErrorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -185,7 +188,7 @@ fun ProfileScreen(
                         )
                     } else {
                         Text(
-                            text = stringResource(R.string.profile_delete_account_action_btn),
+                            text = stringResource(R.string.profile_delete_permanently),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -197,11 +200,11 @@ fun ProfileScreen(
         }
     }
 
-    // Logout dialog
+    // Logout Dialog
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text(stringResource(R.string.profile_logout_title)) },
+            title = { Text(stringResource(R.string.profile_logout)) },
             text = { Text(stringResource(R.string.profile_logout_confirmation)) },
             confirmButton = {
                 TextButton(
@@ -210,12 +213,12 @@ fun ProfileScreen(
                         viewModel.onEvent(ProfileEvent.Logout)
                     }
                 ) {
-                    Text(stringResource(R.string.profile_logout_title), color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.profile_logout), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text(stringResource(R.string.profile_cancel_action))
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -264,6 +267,7 @@ fun ProfileScreen(
 
     // Edit Profile Sheet
     if (state.isEditSheetVisible) {
+        val editErrorText = profileSheetErrorMessage(state.sheetErrorCode)
         ModalBottomSheet(
             onDismissRequest = { viewModel.onEvent(ProfileEvent.HideEditSheet) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -278,7 +282,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.profile_edit_title),
+                    text = stringResource(R.string.profile_edit),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -288,6 +292,7 @@ fun ProfileScreen(
                     onValueChange = { viewModel.onEvent(ProfileEvent.FullNameChanged(it)) },
                     label = { Text(stringResource(R.string.register_full_name_label)) },
                     singleLine = true,
+                    isError = editErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
@@ -338,9 +343,9 @@ fun ProfileScreen(
                     }
                 }
 
-                if (state.sheetErrorMessage != null) {
+                if (editErrorText != null) {
                     Text(
-                        text = state.sheetErrorMessage!!,
+                        text = editErrorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -362,7 +367,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text(stringResource(R.string.budget_save_action), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.save), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -371,6 +376,7 @@ fun ProfileScreen(
 
     // Change Password Sheet
     if (state.isPasswordSheetVisible) {
+        val passwordErrorText = profileSheetErrorMessage(state.sheetErrorCode)
         ModalBottomSheet(
             onDismissRequest = { viewModel.onEvent(ProfileEvent.HidePasswordSheet) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -385,7 +391,7 @@ fun ProfileScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.profile_change_password_title),
+                    text = stringResource(R.string.profile_change_password),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -393,7 +399,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.oldPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.OldPasswordChanged(it)) },
-                    label = { Text(stringResource(R.string.profile_current_password_label)) },
+                    label = { Text(stringResource(R.string.profile_current_password)) },
                     visualTransformation = if (state.isPasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -409,6 +415,7 @@ fun ProfileScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
+                    isError = passwordErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
@@ -419,7 +426,7 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.newPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.NewPasswordChanged(it)) },
-                    label = { Text(stringResource(R.string.profile_new_password_label)) },
+                    label = { Text(stringResource(R.string.profile_new_password)) },
                     visualTransformation = if (state.isNewPasswordVisible)
                         VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -435,6 +442,7 @@ fun ProfileScreen(
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
+                    isError = passwordErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
@@ -445,10 +453,11 @@ fun ProfileScreen(
                 OutlinedTextField(
                     value = state.confirmPassword,
                     onValueChange = { viewModel.onEvent(ProfileEvent.ConfirmPasswordChanged(it)) },
-                    label = { Text(stringResource(R.string.profile_new_password_confirm_label)) },
+                    label = { Text(stringResource(R.string.profile_new_password_confirm)) },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true,
+                    isError = passwordErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
@@ -456,9 +465,9 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (state.sheetErrorMessage != null) {
+                if (passwordErrorText != null) {
                     Text(
-                        text = state.sheetErrorMessage!!,
+                        text = passwordErrorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -480,7 +489,7 @@ fun ProfileScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text(stringResource(R.string.budget_save_action), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.save), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -496,7 +505,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = stringResource(R.string.nav_profile),
+                text = stringResource(R.string.profile_title),
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -561,7 +570,7 @@ fun ProfileScreen(
                     }
                 }
 
-                // Ayarlar listesi
+                // Ayarlar
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
@@ -572,33 +581,21 @@ fun ProfileScreen(
                     Column {
                         ProfileMenuItem(
                             icon = Icons.Default.Edit,
-                            title = stringResource(R.string.profile_edit_title),
+                            title = stringResource(R.string.profile_edit),
                             subtitle = stringResource(R.string.profile_edit_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowEditSheet) }
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .padding(horizontal = 16.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
+                        ProfileDivider()
 
                         ProfileMenuItem(
                             icon = Icons.Default.Lock,
-                            title = stringResource(R.string.profile_change_password_title),
+                            title = stringResource(R.string.profile_change_password),
                             subtitle = stringResource(R.string.profile_change_password_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowPasswordSheet) }
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .padding(horizontal = 16.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
+                        ProfileDivider()
 
                         // Karanlık Mod
                         Row(
@@ -628,7 +625,7 @@ fun ProfileScreen(
                                 }
                                 Column {
                                     Text(
-                                        text = stringResource(R.string.profile_dark_mode_title),
+                                        text = stringResource(R.string.profile_dark_mode),
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSurface
@@ -650,14 +647,8 @@ fun ProfileScreen(
                             )
                         }
 
-                        // Dil Seçeneği Çizgisi ve Elemanı
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .padding(horizontal = 16.dp)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
+                        ProfileDivider()
+
                         ProfileMenuItem(
                             icon = Icons.Default.Language,
                             title = stringResource(R.string.profile_language),
@@ -667,6 +658,7 @@ fun ProfileScreen(
                     }
                 }
 
+                // Tehlikeli alan
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
@@ -677,25 +669,19 @@ fun ProfileScreen(
                     Column {
                         ProfileMenuItem(
                             icon = Icons.Default.Logout,
-                            title = stringResource(R.string.profile_logout_title),
+                            title = stringResource(R.string.profile_logout),
                             subtitle = stringResource(R.string.profile_logout_subtitle),
                             onClick = { showLogoutDialog = true },
                             iconTint = MaterialTheme.colorScheme.error,
                             titleColor = MaterialTheme.colorScheme.error
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(1.dp)
-                                .padding(horizontal = 16.dp)
-                                .background(MaterialTheme.colorScheme.errorContainer)
-                        )
+                        ProfileDivider(color = MaterialTheme.colorScheme.errorContainer)
 
                         ProfileMenuItem(
                             icon = Icons.Default.DeleteForever,
-                            title = stringResource(R.string.profile_delete_account_title),
-                            subtitle = stringResource(R.string.profile_delete_account_subtitle),
+                            title = stringResource(R.string.profile_delete_account),
+                            subtitle = stringResource(R.string.profile_delete_subtitle),
                             onClick = { viewModel.onEvent(ProfileEvent.ShowDeleteSheet) },
                             iconTint = MaterialTheme.colorScheme.error,
                             titleColor = MaterialTheme.colorScheme.error
@@ -770,6 +756,17 @@ private fun ProfileMenuItem(
 }
 
 @Composable
+private fun ProfileDivider(color: Color = MaterialTheme.colorScheme.surfaceVariant) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .padding(horizontal = 16.dp)
+            .background(color)
+    )
+}
+
+@Composable
 private fun LanguageOption(
     label: String,
     selected: Boolean,
@@ -785,11 +782,27 @@ private fun LanguageOption(
         RadioButton(
             selected = selected,
             onClick = onClick,
-            colors = androidx.compose.material3.RadioButtonDefaults.colors(
+            colors = RadioButtonDefaults.colors(
                 selectedColor = MaterialTheme.colorScheme.primary
             )
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+private fun profileSheetErrorMessage(code: String?): String? {
+    return when (code) {
+        "LOCAL_FULLNAME_EMPTY" -> stringResource(R.string.error_fullname_empty)
+        "LOCAL_OLD_PASSWORD_EMPTY" -> stringResource(R.string.error_old_password_empty)
+        "LOCAL_NEW_PASSWORD_EMPTY" -> stringResource(R.string.error_new_password_empty)
+        "LOCAL_PASSWORD_SHORT" -> stringResource(R.string.error_password_short)
+        "LOCAL_PASSWORD_MISMATCH" -> stringResource(R.string.error_password_mismatch)
+        "LOCAL_DELETE_PASSWORD_EMPTY" -> stringResource(R.string.error_delete_password_empty)
+        "4002", "4003" -> stringResource(R.string.error_wrong_password)
+        "CONNECTION_ERROR" -> stringResource(R.string.error_connection)
+        null -> null
+        else -> stringResource(R.string.error_generic)
     }
 }

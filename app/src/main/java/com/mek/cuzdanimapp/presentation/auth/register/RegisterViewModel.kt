@@ -28,16 +28,16 @@ class RegisterViewModel @Inject constructor(
     fun onEvent(event: RegisterEvent) {
         when (event) {
             is RegisterEvent.FullNameChanged -> {
-                _state.update { it.copy(fullName = event.fullName, errorMessage = null) }
+                _state.update { it.copy(fullName = event.fullName, errorCode = null, errorMessage = null) }
             }
             is RegisterEvent.EmailChanged -> {
-                _state.update { it.copy(email = event.email, errorMessage = null) }
+                _state.update { it.copy(email = event.email, errorCode = null, errorMessage = null) }
             }
             is RegisterEvent.PasswordChanged -> {
-                _state.update { it.copy(password = event.password, errorMessage = null) }
+                _state.update { it.copy(password = event.password, errorCode = null, errorMessage = null) }
             }
             is RegisterEvent.ConfirmPasswordChanged -> {
-                _state.update { it.copy(confirmPassword = event.confirmPassword, errorMessage = null) }
+                _state.update { it.copy(confirmPassword = event.confirmPassword, errorCode = null, errorMessage = null) }
             }
             is RegisterEvent.CurrencySelected -> {
                 _state.update { it.copy(selectedCurrency = event.currency) }
@@ -54,6 +54,9 @@ class RegisterViewModel @Inject constructor(
                     _effect.send(RegisterEffect.NavigateToLogin)
                 }
             }
+            is RegisterEvent.ClearState -> {
+                _state.update { RegisterState() }
+            }
         }
     }
 
@@ -61,24 +64,28 @@ class RegisterViewModel @Inject constructor(
         val state = _state.value
 
         if (state.fullName.isBlank()) {
-            _state.update { it.copy(errorMessage = "Ad soyad boş bırakılamaz") }
+            _state.update { it.copy(errorCode = "LOCAL_FULLNAME_EMPTY") }
             return
         }
         if (state.email.isBlank()) {
-            _state.update { it.copy(errorMessage = "E-posta boş bırakılamaz") }
+            _state.update { it.copy(errorCode = "LOCAL_EMAIL_EMPTY") }
+            return
+        }
+        if (state.password.isBlank()) {
+            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_EMPTY") }
             return
         }
         if (state.password.length < 8) {
-            _state.update { it.copy(errorMessage = "Şifre en az 8 karakter olmalı") }
+            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_SHORT") }
             return
         }
         if (state.password != state.confirmPassword) {
-            _state.update { it.copy(errorMessage = "Şifreler eşleşmiyor") }
+            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_MISMATCH") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, errorCode = null, errorMessage = null) }
 
             when (val result = registerUseCase(
                 fullName = state.fullName,
@@ -91,13 +98,14 @@ class RegisterViewModel @Inject constructor(
                     _effect.send(RegisterEffect.ShowVerificationMessage)
                 }
                 is Resource.Error -> {
+                    val code = result.message ?: "UNKNOWN"
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = result.message
+                            errorCode = code,
+                            errorMessage = null
                         )
                     }
-                    _effect.send(RegisterEffect.ShowError(result.message ?: "Bir hata oluştu"))
                 }
                 is Resource.Loading -> Unit
             }

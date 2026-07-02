@@ -1,5 +1,6 @@
 package com.mek.cuzdanimapp.presentation.budget
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -310,6 +311,7 @@ fun BudgetScreen(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 private fun BudgetCard(
     budget: Budget,

@@ -1,5 +1,7 @@
 package com.mek.cuzdanimapp.data.repository
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.mek.cuzdanimapp.data.mapper.toDomain
 import com.mek.cuzdanimapp.data.remote.ProfileApi
 import com.mek.cuzdanimapp.data.remote.dto.profile.ChangePasswordRequestDto
@@ -8,6 +10,7 @@ import com.mek.cuzdanimapp.data.remote.dto.profile.UpdateProfileRequestDto
 import com.mek.cuzdanimapp.domain.model.User
 import com.mek.cuzdanimapp.domain.repository.ProfileRepository
 import com.mek.cuzdanimapp.util.Resource
+import retrofit2.HttpException
 import javax.inject.Inject
 
 class ProfileRepositoryImpl @Inject constructor(
@@ -17,21 +20,20 @@ class ProfileRepositoryImpl @Inject constructor(
     override suspend fun getProfile(): Resource<User> {
         return try {
             Resource.Success(api.getProfile().toDomain())
+        } catch (e: HttpException) {
+            Resource.Error(parseError(e))
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Bir hata oluştu")
+            Resource.Error("CONNECTION_ERROR")
         }
     }
 
-    override suspend fun updateProfile(
-        fullName: String,
-        currency: String
-    ): Resource<User> {
+    override suspend fun updateProfile(fullName: String, currency: String): Resource<User> {
         return try {
-            Resource.Success(
-                api.updateProfile(UpdateProfileRequestDto(fullName, currency)).toDomain()
-            )
+            Resource.Success(api.updateProfile(UpdateProfileRequestDto(fullName, currency)).toDomain())
+        } catch (e: HttpException) {
+            Resource.Error(parseError(e))
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Bir hata oluştu")
+            Resource.Error("CONNECTION_ERROR")
         }
     }
 
@@ -43,8 +45,10 @@ class ProfileRepositoryImpl @Inject constructor(
         return try {
             api.changePassword(ChangePasswordRequestDto(oldPassword, newPassword, confirmPassword))
             Resource.Success(Unit)
+        } catch (e: HttpException) {
+            Resource.Error(parseError(e))
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Bir hata oluştu")
+            Resource.Error("CONNECTION_ERROR")
         }
     }
 
@@ -52,8 +56,26 @@ class ProfileRepositoryImpl @Inject constructor(
         return try {
             api.deleteAccount(DeleteAccountRequestDto(password))
             Resource.Success(Unit)
+        } catch (e: HttpException) {
+            Resource.Error(parseError(e))
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Bir hata oluştu")
+            Resource.Error("CONNECTION_ERROR")
+        }
+    }
+
+    private fun parseError(e: HttpException): String {
+        return try {
+            val errorBody = e.response()?.errorBody()?.string()
+            if (!errorBody.isNullOrBlank()) {
+                val json = Gson().fromJson(errorBody, JsonObject::class.java)
+                val code = json.getAsJsonObject("errorDetails")
+                    ?.get("code")?.asString ?: "UNKNOWN"
+                code
+            } else {
+                "UNKNOWN"
+            }
+        } catch (ex: Exception) {
+            "UNKNOWN"
         }
     }
 }

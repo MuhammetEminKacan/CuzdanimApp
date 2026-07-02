@@ -69,12 +69,14 @@ fun RegisterScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val verificationSentMessage = stringResource(R.string.register_verification_sent)
 
+    val errorText = registerErrorMessage(state.errorCode)
+
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
                 is RegisterEffect.NavigateToDashboard -> onNavigateToDashboard()
                 is RegisterEffect.NavigateToLogin -> onNavigateToLogin()
-                is RegisterEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+                is RegisterEffect.ShowError -> { }
                 is RegisterEffect.ShowVerificationMessage -> {
                     snackbarHostState.showSnackbar(verificationSentMessage)
                     onNavigateToLogin()
@@ -141,7 +143,7 @@ fun RegisterScreen(
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -166,7 +168,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Next
                     ),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -209,7 +211,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Next
                     ),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -252,7 +254,7 @@ fun RegisterScreen(
                         imeAction = ImeAction.Done
                     ),
                     singleLine = true,
-                    isError = state.errorMessage != null,
+                    isError = errorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -304,9 +306,9 @@ fun RegisterScreen(
                     }
                 }
 
-                if (state.errorMessage != null) {
+                if (errorText != null) {
                     Text(
-                        text = state.errorMessage!!,
+                        text = errorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
@@ -380,5 +382,20 @@ fun RegisterScreen(
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
             )
         }
+    }
+}
+
+@Composable
+private fun registerErrorMessage(code: String?): String? {
+    return when (code) {
+        "1003" -> stringResource(R.string.error_email_already_exists)
+        "LOCAL_FULLNAME_EMPTY" -> stringResource(R.string.error_fullname_empty)
+        "LOCAL_EMAIL_EMPTY" -> stringResource(R.string.error_email_empty)
+        "LOCAL_PASSWORD_EMPTY" -> stringResource(R.string.error_password_empty)
+        "LOCAL_PASSWORD_SHORT" -> stringResource(R.string.error_password_short)
+        "LOCAL_PASSWORD_MISMATCH" -> stringResource(R.string.error_password_mismatch)
+        "CONNECTION_ERROR" -> stringResource(R.string.error_connection)
+        null -> null
+        else -> stringResource(R.string.error_register_failed)
     }
 }

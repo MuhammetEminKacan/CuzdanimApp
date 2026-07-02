@@ -6,6 +6,7 @@ import com.mek.cuzdanimapp.domain.usecase.recurring.DeleteRecurringPaymentUseCas
 import com.mek.cuzdanimapp.domain.usecase.recurring.GetAllRecurringPaymentsUseCase
 import com.mek.cuzdanimapp.domain.usecase.recurring.ToggleRecurringPaymentUseCase
 import com.mek.cuzdanimapp.util.Resource
+import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class RecurringPaymentViewModel @Inject constructor(
     private val getAllRecurringPaymentsUseCase: GetAllRecurringPaymentsUseCase,
     private val toggleRecurringPaymentUseCase: ToggleRecurringPaymentUseCase,
-    private val deleteRecurringPaymentUseCase: DeleteRecurringPaymentUseCase
+    private val deleteRecurringPaymentUseCase: DeleteRecurringPaymentUseCase,
+    private val transactionEventBus: TransactionEventBus
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(RecurringPaymentState())
@@ -31,6 +33,18 @@ class RecurringPaymentViewModel @Inject constructor(
 
     init {
         onEvent(RecurringPaymentEvent.LoadRecurringPayments)
+        observeEvents()
+    }
+
+    private fun observeEvents() {
+        viewModelScope.launch {
+            transactionEventBus.events.collect { event ->
+                when (event) {
+                    is TransactionEventBus.TransactionEvent.RecurringPaymentAdded -> load()
+                    else -> Unit
+                }
+            }
+        }
     }
 
     fun onEvent(event: RecurringPaymentEvent) {

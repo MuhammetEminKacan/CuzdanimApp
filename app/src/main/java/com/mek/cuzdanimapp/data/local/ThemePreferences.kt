@@ -16,14 +16,14 @@ private val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
 class ThemePreferences @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) {
-    private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
+    private val darkModeKey = booleanPreferencesKey("dark_mode")
 
     val isDarkMode: Flow<Boolean> = context.themeDataStore.data
-        .map { preferences -> preferences[DARK_MODE_KEY] ?: false }
+        .map { preferences -> preferences[darkModeKey] ?: false }
 
     suspend fun setDarkMode(enabled: Boolean) {
         context.themeDataStore.edit { preferences ->
-            preferences[DARK_MODE_KEY] = enabled
+            preferences[darkModeKey] = enabled
         }
     }
 }

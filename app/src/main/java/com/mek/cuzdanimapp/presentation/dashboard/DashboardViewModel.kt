@@ -3,6 +3,8 @@ package com.mek.cuzdanimapp.presentation.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.dashboard.GetDashboardSummaryUseCase
+import com.mek.cuzdanimapp.presentation.navigation.RecurringRoute
+import com.mek.cuzdanimapp.presentation.navigation.TransactionsRoute
 import com.mek.cuzdanimapp.util.Resource
 import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,6 +38,16 @@ class DashboardViewModel @Inject constructor(
         when (event) {
             is DashboardEvent.LoadDashboard,
             is DashboardEvent.Refresh -> loadDashboard()
+            is DashboardEvent.OnSeeAllPaymentsClicked -> {
+                viewModelScope.launch {
+                    _effect.send(DashboardEffect.NavigateTo(RecurringRoute))
+                }
+            }
+            is DashboardEvent.OnSeeAllTransactionsClicked -> {
+                viewModelScope.launch {
+                    _effect.send(DashboardEffect.NavigateTo(TransactionsRoute))
+                }
+            }
         }
     }
 
@@ -43,10 +55,9 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             transactionEventBus.events.collect { event ->
                 when (event) {
-                    is TransactionEventBus.TransactionEvent.TransactionAdded,
-                    is TransactionEventBus.TransactionEvent.TransactionDeleted -> {
-                        loadDashboard()
-                    }
+                    is TransactionEventBus.TransactionEvent.TransactionAdded -> loadDashboard()
+                    is TransactionEventBus.TransactionEvent.TransactionDeleted -> loadDashboard()
+                    is TransactionEventBus.TransactionEvent.RecurringPaymentAdded -> loadDashboard()
                 }
             }
         }

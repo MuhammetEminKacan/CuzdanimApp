@@ -1,5 +1,6 @@
 package com.mek.cuzdanimapp.data.remote.interceptor
 
+import android.util.Log
 import com.mek.cuzdanimapp.data.local.TokenManager
 import com.mek.cuzdanimapp.data.remote.AuthApi
 import com.mek.cuzdanimapp.data.remote.dto.auth.RefreshTokenRequest
@@ -11,8 +12,15 @@ import javax.inject.Named
 
 class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager,
-    @Named("refreshAuthApi") private val refreshAuthApi: AuthApi
+    @param:Named("refreshAuthApi") private val refreshAuthApi: AuthApi
 ) : Interceptor {
+
+    private val publicPaths = listOf(
+        "auth/login",
+        "auth/register",
+        "auth/refresh",
+        "auth/verify"
+    )
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val token = tokenManager.getAccessToken()
@@ -21,6 +29,11 @@ class AuthInterceptor @Inject constructor(
         }.build()
 
         val response = chain.proceed(request)
+
+        val path = request.url.encodedPath
+        if (publicPaths.any { path.contains(it) }) {
+            return response
+        }
 
         if (response.code == 401) {
             response.close()
@@ -47,7 +60,7 @@ class AuthInterceptor @Inject constructor(
 
                 chain.proceed(newRequest)
             } catch (e: Exception) {
-                // Refresh başarısız — token'ları temizle, logout event'i tetikle
+                Log.e("interceptor", e.printStackTrace().toString())
                 tokenManager.clearTokens()
                 response
             }
