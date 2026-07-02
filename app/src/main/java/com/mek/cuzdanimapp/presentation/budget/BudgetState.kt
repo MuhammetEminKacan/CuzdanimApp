@@ -10,6 +10,6 @@ data class BudgetState(
     val editingBudget: Budget? = null,
     val selectedCategory: String = "",
     val limitAmount: String = "",
-    val sheetErrorMessage: String? = null,
+    val sheetErrorCode: String? = null,
     val isSheetLoading: Boolean = false
 )

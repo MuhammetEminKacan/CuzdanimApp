@@ -1,6 +1,5 @@
 package com.mek.cuzdanimapp.presentation.budget
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -69,6 +68,7 @@ import com.mek.cuzdanimapp.domain.model.Budget
 import com.mek.cuzdanimapp.presentation.main.categoryDisplayName
 import com.mek.cuzdanimapp.presentation.main.expenseCategories
 import com.mek.cuzdanimapp.ui.theme.appColors
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -92,7 +92,7 @@ fun BudgetScreen(
         }
     }
 
-    budgetToDelete?.let { id ->
+    if (budgetToDelete != null) {
         AlertDialog(
             onDismissRequest = { budgetToDelete = null },
             title = { Text(stringResource(R.string.budget_delete_title)) },
@@ -100,7 +100,7 @@ fun BudgetScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.onEvent(BudgetEvent.Delete(id))
+                        budgetToDelete?.let { viewModel.onEvent(BudgetEvent.Delete(it)) }
                         budgetToDelete = null
                     }
                 ) {
@@ -109,7 +109,7 @@ fun BudgetScreen(
             },
             dismissButton = {
                 TextButton(onClick = { budgetToDelete = null }) {
-                    Text(stringResource(R.string.budget_cancel_action))
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -117,6 +117,7 @@ fun BudgetScreen(
 
     // Add/Edit Bottom Sheet
     if (state.isAddSheetVisible) {
+        val sheetErrorText = budgetSheetErrorMessage(state.sheetErrorCode)
         ModalBottomSheet(
             onDismissRequest = { viewModel.onEvent(BudgetEvent.HideSheet) },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -131,7 +132,8 @@ fun BudgetScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = if (state.editingBudget != null) stringResource(R.string.budget_edit_title) else stringResource(R.string.budget_add_title),
+                    text = if (state.editingBudget != null) stringResource(R.string.budget_edit)
+                    else stringResource(R.string.budget_add),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -140,7 +142,7 @@ fun BudgetScreen(
                 // Kategori seçimi — sadece yeni eklemede göster
                 if (state.editingBudget == null) {
                     Text(
-                        text = stringResource(R.string.budget_category_label),
+                        text = stringResource(R.string.budget_category),
                         fontSize = 14.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -187,10 +189,10 @@ fun BudgetScreen(
                 OutlinedTextField(
                     value = state.limitAmount,
                     onValueChange = { viewModel.onEvent(BudgetEvent.LimitChanged(it)) },
-                    label = { Text(stringResource(R.string.budget_limit_label)) },
+                    label = { Text(stringResource(R.string.budget_monthly_limit)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     singleLine = true,
-                    isError = state.sheetErrorMessage != null,
+                    isError = sheetErrorText != null,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary
@@ -198,9 +200,9 @@ fun BudgetScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (state.sheetErrorMessage != null) {
+                if (sheetErrorText != null) {
                     Text(
-                        text = state.sheetErrorMessage!!,
+                        text = sheetErrorText,
                         color = MaterialTheme.colorScheme.error,
                         fontSize = 12.sp
                     )
@@ -227,7 +229,7 @@ fun BudgetScreen(
                         )
                     } else {
                         Text(
-                            text = stringResource(R.string.budget_save_action),
+                            text = stringResource(R.string.save),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -254,7 +256,7 @@ fun BudgetScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(R.string.budget_screen_title),
+                            text = stringResource(R.string.budget_title),
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -266,7 +268,7 @@ fun BudgetScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(R.string.budget_add_title),
+                                contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -284,7 +286,7 @@ fun BudgetScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = stringResource(R.string.budget_empty_message),
+                                text = stringResource(R.string.budget_empty),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 16.sp
                             )
@@ -311,7 +313,6 @@ fun BudgetScreen(
     }
 }
 
-@SuppressLint("DefaultLocale")
 @Composable
 private fun BudgetCard(
     budget: Budget,
@@ -357,7 +358,7 @@ private fun BudgetCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.budget_edit_action),
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -368,7 +369,7 @@ private fun BudgetCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.budget_delete_action),
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.error,
                             modifier = Modifier.size(16.dp)
                         )
@@ -376,7 +377,6 @@ private fun BudgetCard(
                 }
             }
 
-            // Progress bar
             LinearProgressIndicator(
                 progress = { (budget.usagePercentage / 100).toFloat().coerceIn(0f, 1f) },
                 modifier = Modifier
@@ -393,12 +393,15 @@ private fun BudgetCard(
             ) {
                 Column {
                     Text(
-                        text = stringResource(R.string.budget_spent_label),
+                        text = stringResource(R.string.budget_spent),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.spentAmount)),
+                        text = stringResource(
+                            R.string.dashboard_amount_format,
+                            String.format(Locale.US, "%.2f", budget.spentAmount)
+                        ),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = usageColor
@@ -406,12 +409,15 @@ private fun BudgetCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = stringResource(R.string.budget_limit_title),
+                        text = stringResource(R.string.budget_limit),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.monthlyLimit)),
+                        text = stringResource(
+                            R.string.dashboard_amount_format,
+                            String.format(Locale.US, "%.2f", budget.monthlyLimit)
+                        ),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -419,12 +425,15 @@ private fun BudgetCard(
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = stringResource(R.string.budget_remaining_label),
+                        text = stringResource(R.string.budget_remaining),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = stringResource(R.string.budget_amount_format, String.format("%.2f", budget.remainingAmount)),
+                        text = stringResource(
+                            R.string.dashboard_amount_format,
+                            String.format(Locale.US, "%.2f", budget.remainingAmount)
+                        ),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = if (budget.remainingAmount < 0) MaterialTheme.appColors.expense
@@ -457,7 +466,7 @@ private fun BudgetCard(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = stringResource(R.string.budget_warning_warning, budget.usagePercentage.toInt()),
+                        text = stringResource(R.string.budget_warning_high, budget.usagePercentage.toInt()),
                         fontSize = 12.sp,
                         color = MaterialTheme.appColors.warning,
                         fontWeight = FontWeight.SemiBold
@@ -465,5 +474,16 @@ private fun BudgetCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun budgetSheetErrorMessage(code: String?): String? {
+    return when (code) {
+        "LOCAL_CATEGORY_EMPTY" -> stringResource(R.string.error_category_empty)
+        "LOCAL_INVALID_LIMIT" -> stringResource(R.string.error_invalid_limit)
+        "CONNECTION_ERROR" -> stringResource(R.string.error_connection)
+        null -> null
+        else -> stringResource(R.string.error_generic)
     }
 }

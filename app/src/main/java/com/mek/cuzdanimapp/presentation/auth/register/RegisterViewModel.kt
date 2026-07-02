@@ -28,16 +28,16 @@ class RegisterViewModel @Inject constructor(
     fun onEvent(event: RegisterEvent) {
         when (event) {
             is RegisterEvent.FullNameChanged -> {
-                _state.update { it.copy(fullName = event.fullName, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(fullName = event.fullName, errorCode = null) }
             }
             is RegisterEvent.EmailChanged -> {
-                _state.update { it.copy(email = event.email, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(email = event.email, errorCode = null) }
             }
             is RegisterEvent.PasswordChanged -> {
-                _state.update { it.copy(password = event.password, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(password = event.password, errorCode = null) }
             }
             is RegisterEvent.ConfirmPasswordChanged -> {
-                _state.update { it.copy(confirmPassword = event.confirmPassword, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(confirmPassword = event.confirmPassword, errorCode = null) }
             }
             is RegisterEvent.CurrencySelected -> {
                 _state.update { it.copy(selectedCurrency = event.currency) }
@@ -85,7 +85,7 @@ class RegisterViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorCode = null, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, errorCode = null) }
 
             when (val result = registerUseCase(
                 fullName = state.fullName,
@@ -102,8 +102,7 @@ class RegisterViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorCode = code,
-                            errorMessage = null
+                            errorCode = code
                         )
                     }
                 }

@@ -47,7 +47,7 @@ class BudgetViewModel @Inject constructor(
                         editingBudget = null,
                         selectedCategory = "",
                         limitAmount = "",
-                        sheetErrorMessage = null
+                        sheetErrorCode = null
                     )
                 }
             }
@@ -59,7 +59,7 @@ class BudgetViewModel @Inject constructor(
                         editingBudget = event.budget,
                         selectedCategory = event.budget.category,
                         limitAmount = event.budget.monthlyLimit.toString(),
-                        sheetErrorMessage = null
+                        sheetErrorCode = null
                     )
                 }
             }
@@ -69,11 +69,11 @@ class BudgetViewModel @Inject constructor(
             }
 
             is BudgetEvent.CategoryChanged -> {
-                _state.update { it.copy(selectedCategory = event.category, sheetErrorMessage = null) }
+                _state.update { it.copy(selectedCategory = event.category, sheetErrorCode = null) }
             }
 
             is BudgetEvent.LimitChanged -> {
-                _state.update { it.copy(limitAmount = event.limit, sheetErrorMessage = null) }
+                _state.update { it.copy(limitAmount = event.limit, sheetErrorCode = null) }
             }
 
             is BudgetEvent.Save -> save()
@@ -93,7 +93,7 @@ class BudgetViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    _effect.send(BudgetEffect.ShowError(result.message ?: "Hata"))
+                    _effect.send(BudgetEffect.ShowError(result.message ?: ""))
                 }
                 is Resource.Loading -> Unit
             }
@@ -104,18 +104,18 @@ class BudgetViewModel @Inject constructor(
         val state = _state.value
 
         if (state.selectedCategory.isEmpty()) {
-            _state.update { it.copy(sheetErrorMessage = "Kategori seçiniz") }
+            _state.update { it.copy(sheetErrorCode = "LOCAL_CATEGORY_EMPTY") }
             return
         }
 
         val limit = state.limitAmount.toDoubleOrNull()
         if (limit == null || limit <= 0) {
-            _state.update { it.copy(sheetErrorMessage = "Geçerli bir limit giriniz") }
+            _state.update { it.copy(sheetErrorCode = "LOCAL_INVALID_LIMIT") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isSheetLoading = true, sheetErrorMessage = null) }
+            _state.update { it.copy(isSheetLoading = true, sheetErrorCode = null) }
 
             val result = if (state.editingBudget != null) {
                 updateBudgetUseCase(state.editingBudget.id, state.selectedCategory, limit)
@@ -131,7 +131,7 @@ class BudgetViewModel @Inject constructor(
                 }
                 is Resource.Error -> {
                     _state.update { it.copy(isSheetLoading = false) }
-                    _effect.send(BudgetEffect.ShowError(result.message ?: "Kaydedilemedi"))
+                    _effect.send(BudgetEffect.ShowError(result.message ?: ""))
                 }
                 is Resource.Loading -> Unit
             }
@@ -140,7 +140,7 @@ class BudgetViewModel @Inject constructor(
 
     private fun delete(id: Long) {
         viewModelScope.launch {
-            when (deleteUseCase(id)) {
+            when (deleteBudgetUseCase(id)) {
                 is Resource.Success -> {
                     _state.update { state ->
                         state.copy(budgets = state.budgets.filter { it.id != id })
@@ -148,12 +148,10 @@ class BudgetViewModel @Inject constructor(
                     _effect.send(BudgetEffect.Deleted)
                 }
                 is Resource.Error -> {
-                    _effect.send(BudgetEffect.ShowError("Silinemedi"))
+                    _effect.send(BudgetEffect.ShowError(""))
                 }
                 is Resource.Loading -> Unit
             }
         }
     }
-
-    private suspend fun deleteUseCase(id: Long) = deleteBudgetUseCase(id)
 }

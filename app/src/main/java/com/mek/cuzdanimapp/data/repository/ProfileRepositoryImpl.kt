@@ -22,7 +22,7 @@ class ProfileRepositoryImpl @Inject constructor(
             Resource.Success(api.getProfile().toDomain())
         } catch (e: HttpException) {
             Resource.Error(parseError(e))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -32,7 +32,7 @@ class ProfileRepositoryImpl @Inject constructor(
             Resource.Success(api.updateProfile(UpdateProfileRequestDto(fullName, currency)).toDomain())
         } catch (e: HttpException) {
             Resource.Error(parseError(e))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -47,7 +47,7 @@ class ProfileRepositoryImpl @Inject constructor(
             Resource.Success(Unit)
         } catch (e: HttpException) {
             Resource.Error(parseError(e))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -58,7 +58,7 @@ class ProfileRepositoryImpl @Inject constructor(
             Resource.Success(Unit)
         } catch (e: HttpException) {
             Resource.Error(parseError(e))
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -68,13 +68,12 @@ class ProfileRepositoryImpl @Inject constructor(
             val errorBody = e.response()?.errorBody()?.string()
             if (!errorBody.isNullOrBlank()) {
                 val json = Gson().fromJson(errorBody, JsonObject::class.java)
-                val code = json.getAsJsonObject("errorDetails")
+                json.getAsJsonObject("errorDetails")
                     ?.get("code")?.asString ?: "UNKNOWN"
-                code
             } else {
                 "UNKNOWN"
             }
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             "UNKNOWN"
         }
     }

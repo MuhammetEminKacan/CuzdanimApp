@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase,
+    private val loginUseCase: LoginUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -28,10 +28,10 @@ class LoginViewModel @Inject constructor(
     fun onEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.EmailChanged -> {
-                _state.update { it.copy(email = event.email, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(email = event.email, errorCode = null) }
             }
             is LoginEvent.PasswordChanged -> {
-                _state.update { it.copy(password = event.password, errorCode = null, errorMessage = null) }
+                _state.update { it.copy(password = event.password, errorCode = null) }
             }
             is LoginEvent.TogglePasswordVisibility -> {
                 _state.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
@@ -52,16 +52,16 @@ class LoginViewModel @Inject constructor(
         val state = _state.value
 
         if (state.email.isBlank()) {
-            _state.update { it.copy(errorCode = "LOCAL_EMAIL_EMPTY", errorMessage = null) }
+            _state.update { it.copy(errorCode = "LOCAL_EMAIL_EMPTY") }
             return
         }
         if (state.password.isBlank()) {
-            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_EMPTY", errorMessage = null) }
+            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_EMPTY") }
             return
         }
 
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorCode = null, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, errorCode = null) }
 
             when (val result = loginUseCase(
                 email = state.email,
@@ -76,8 +76,7 @@ class LoginViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorCode = code,
-                            errorMessage = null
+                            errorCode = code
                         )
                     }
                 }

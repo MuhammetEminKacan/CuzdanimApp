@@ -65,7 +65,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadDashboard() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = true) }
             when (val result = getDashboardSummaryUseCase()) {
                 is Resource.Success -> {
                     _state.update {

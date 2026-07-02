@@ -20,7 +20,6 @@ import com.mek.cuzdanimapp.presentation.budget.BudgetViewModel
 import com.mek.cuzdanimapp.presentation.dashboard.DashboardScreen
 import com.mek.cuzdanimapp.presentation.dashboard.DashboardViewModel
 import com.mek.cuzdanimapp.presentation.main.AddTransactionBottomSheet
-import com.mek.cuzdanimapp.presentation.main.AddTransactionSheetEffect
 import com.mek.cuzdanimapp.presentation.main.AddTransactionSheetEvent
 import com.mek.cuzdanimapp.presentation.main.AddTransactionViewModel
 import com.mek.cuzdanimapp.presentation.main.MainScreen

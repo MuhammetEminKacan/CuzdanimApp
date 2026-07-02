@@ -27,9 +27,8 @@ class AuthRepositoryImpl @Inject constructor(
             tokenManager.saveTokens(result.accessToken!!, result.refreshToken!!)
             Resource.Success(result)
         } catch (e: HttpException) {
-            val (code, _) = parseError(e)
-            Resource.Error(code)
-        } catch (e: Exception) {
+            Resource.Error(parseError(e))
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -44,9 +43,8 @@ class AuthRepositoryImpl @Inject constructor(
             val response = api.register(RegisterRequest(fullName, email, password, currency))
             Resource.Success(response.toDomain())
         } catch (e: HttpException) {
-            val (code, _) = parseError(e)
-            Resource.Error(code)
-        } catch (e: Exception) {
+            Resource.Error(parseError(e))
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
@@ -58,28 +56,24 @@ class AuthRepositoryImpl @Inject constructor(
             tokenManager.saveTokens(result.accessToken!!, result.refreshToken!!)
             Resource.Success(result)
         } catch (e: HttpException) {
-            val (code, _) = parseError(e)
-            Resource.Error(code)
-        } catch (e: Exception) {
+            Resource.Error(parseError(e))
+        } catch (_: Exception) {
             Resource.Error("CONNECTION_ERROR")
         }
     }
 
-    private fun parseError(e: HttpException): Pair<String, String> {
+    private fun parseError(e: HttpException): String {
         return try {
             val errorBody = e.response()?.errorBody()?.string()
             if (!errorBody.isNullOrBlank()) {
                 val json = Gson().fromJson(errorBody, JsonObject::class.java)
-                val code = json.getAsJsonObject("errorDetails")
+                json.getAsJsonObject("errorDetails")
                     ?.get("code")?.asString ?: "UNKNOWN"
-                val message = json.getAsJsonObject("errorDetails")
-                    ?.get("message")?.asString ?: ""
-                Pair(code, message)
             } else {
-                Pair("UNKNOWN", e.message())
+                "UNKNOWN"
             }
-        } catch (ex: Exception) {
-            Pair("UNKNOWN", e.message())
+        } catch (_: Exception) {
+            "UNKNOWN"
         }
     }
 }
