@@ -3,7 +3,6 @@ package com.mek.cuzdanimapp.presentation.auth.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mek.cuzdanimapp.domain.usecase.auth.LoginUseCase
-import com.mek.cuzdanimapp.domain.usecase.auth.ResendVerificationUseCase
 import com.mek.cuzdanimapp.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -18,7 +17,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val resendVerificationUseCase: ResendVerificationUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginState())
@@ -30,10 +28,10 @@ class LoginViewModel @Inject constructor(
     fun onEvent(event: LoginEvent) {
         when (event) {
             is LoginEvent.EmailChanged -> {
-                _state.update { it.copy(email = event.email, errorMessage = null) }
+                _state.update { it.copy(email = event.email, errorCode = null, errorMessage = null) }
             }
             is LoginEvent.PasswordChanged -> {
-                _state.update { it.copy(password = event.password, errorMessage = null) }
+                _state.update { it.copy(password = event.password, errorCode = null, errorMessage = null) }
             }
             is LoginEvent.TogglePasswordVisibility -> {
                 _state.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
@@ -44,12 +42,6 @@ class LoginViewModel @Inject constructor(
                     _effect.send(LoginEffect.NavigateToRegister)
                 }
             }
-            is LoginEvent.ResendVerification -> {
-                viewModelScope.launch {
-                    resendVerificationUseCase(_state.value.email)
-                    _effect.send(LoginEffect.VerificationResent)
-                }
-            }
             is LoginEvent.ClearState -> {
                 _state.update { LoginState() }
             }
@@ -57,28 +49,35 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login() {
+        val state = _state.value
+
+        if (state.email.isBlank()) {
+            _state.update { it.copy(errorCode = "LOCAL_EMAIL_EMPTY", errorMessage = null) }
+            return
+        }
+        if (state.password.isBlank()) {
+            _state.update { it.copy(errorCode = "LOCAL_PASSWORD_EMPTY", errorMessage = null) }
+            return
+        }
+
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            _state.update { it.copy(isLoading = true, errorCode = null, errorMessage = null) }
 
             when (val result = loginUseCase(
-                email = _state.value.email,
-                password = _state.value.password
+                email = state.email,
+                password = state.password
             )) {
                 is Resource.Success -> {
                     _state.update { it.copy(isLoading = false) }
                     _effect.send(LoginEffect.NavigateToDashboard)
                 }
                 is Resource.Error -> {
-                    val isNotVerified = result.message?.contains("7001") == true ||
-                            result.message?.contains("not verified") == true
-
+                    val code = result.message ?: "UNKNOWN"
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = if (isNotVerified)
-                                "E-posta adresiniz doğrulanmamış."
-                            else result.message,
-                            showResendOption = isNotVerified
+                            errorCode = code,
+                            errorMessage = null
                         )
                     }
                 }

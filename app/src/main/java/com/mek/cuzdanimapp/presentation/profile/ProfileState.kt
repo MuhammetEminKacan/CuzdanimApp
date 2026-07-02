@@ -19,5 +19,6 @@ data class ProfileState(
     val deletePassword: String = "",
     val isDeletePasswordVisible: Boolean = false,
     val errorMessage: String? = null,
+    val sheetErrorCode: String? = null,
     val sheetErrorMessage: String? = null
 )

@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.RecurringPayment
-import com.mek.cuzdanimapp.presentation.main.categoryDisplayName
 import com.mek.cuzdanimapp.ui.theme.appColors
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,7 +163,14 @@ private fun RecurringPaymentCard(
     onToggle: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val isIncome = payment.category == "INCOME"
+    val categoryTrimmed = payment.category.trim()
+    val isIncome = categoryTrimmed.equals("INCOME", ignoreCase = true) ||
+            categoryTrimmed.equals("GELİR", ignoreCase = true) ||
+            categoryTrimmed.equals("GELIR", ignoreCase = true)
+
+    val localizedCategory = getLocalizedCategory(payment.category)
+    val localizedFrequency = getLocalizedFrequency(payment.frequency)
+    val displayTitle = getLocalizedCategory(payment.title)
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -196,7 +203,7 @@ private fun RecurringPaymentCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = payment.title.first().toString(),
+                        text = displayTitle.firstOrNull()?.toString() ?: "",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
@@ -205,18 +212,18 @@ private fun RecurringPaymentCard(
 
                 Column {
                     Text(
-                        text = payment.title,
+                        text = displayTitle,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = categoryDisplayName(payment.category),
+                        text = localizedCategory,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = frequencyDisplayName(payment.frequency),
+                        text = localizedFrequency,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -228,7 +235,7 @@ private fun RecurringPaymentCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", payment.amount)),
+                    text = stringResource(R.string.dashboard_amount_format, String.format(Locale.US, "%.2f", payment.amount)),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
@@ -266,12 +273,43 @@ private fun RecurringPaymentCard(
 }
 
 @Composable
-fun frequencyDisplayName(frequency: String): String {
-    return when (frequency) {
-        "DAILY" -> stringResource(R.string.frequency_daily)
-        "WEEKLY" -> stringResource(R.string.frequency_weekly)
-        "MONTHLY" -> stringResource(R.string.frequency_monthly)
-        "YEARLY" -> stringResource(R.string.frequency_yearly)
+private fun getLocalizedCategory(category: String): String {
+    val c = category.trim()
+    fun match(vararg words: String) = words.any { it.equals(c, ignoreCase = true) }
+
+    return when {
+        match("INCOME", "GELİR", "GELIR") -> stringResource(R.string.transaction_type_income)
+        match("EXPENSE", "GİDER", "GIDER") -> stringResource(R.string.transaction_type_expense)
+        match("SALARY", "MAAŞ", "MAAS") -> stringResource(R.string.category_salary)
+        match("FREELANCE") -> stringResource(R.string.category_freelance)
+        match("INVESTMENT", "YATIRIM", "YATIRIM") -> stringResource(R.string.category_investment)
+        match("SCHOLARSHIP", "BURS") -> stringResource(R.string.category_scholarship)
+        match("BONUS", "PRİM", "PRIM") -> stringResource(R.string.category_bonus)
+        match("GROCERIES", "MARKET") -> stringResource(R.string.category_groceries)
+        match("FOOD", "YEMEK") -> stringResource(R.string.category_food)
+        match("TRANSPORTATION", "ULAŞIM", "ULASIM") -> stringResource(R.string.category_transportation)
+        match("FUEL", "YAKIT", "YAKIT") -> stringResource(R.string.category_fuel)
+        match("HEALTH", "SAĞLIK", "SAGLIK") -> stringResource(R.string.category_health)
+        match("EDUCATION", "EĞİTİM", "EGITIM") -> stringResource(R.string.category_education)
+        match("ENTERTAINMENT", "EĞLENCE", "EGLENCE") -> stringResource(R.string.category_entertainment)
+        match("RENT", "KİRA", "KIRA") -> stringResource(R.string.category_rent)
+        match("BILLS", "FATURA") -> stringResource(R.string.category_bills)
+        match("SHOPPING", "ALIŞVERİŞ", "ALISVERIS") -> stringResource(R.string.category_shopping)
+        match("OTHER", "DİĞER", "DIGER") -> stringResource(R.string.category_other)
+        else -> category
+    }
+}
+
+@Composable
+private fun getLocalizedFrequency(frequency: String): String {
+    val f = frequency.trim()
+    fun match(vararg words: String) = words.any { it.equals(f, ignoreCase = true) }
+
+    return when {
+        match("DAILY", "GÜNLÜK", "GUNLUK") -> stringResource(R.string.frequency_daily)
+        match("WEEKLY", "HAFTALIK") -> stringResource(R.string.frequency_weekly)
+        match("MONTHLY", "AYLIK") -> stringResource(R.string.frequency_monthly)
+        match("YEARLY", "YILLIK") -> stringResource(R.string.frequency_yearly)
         else -> frequency
     }
 }

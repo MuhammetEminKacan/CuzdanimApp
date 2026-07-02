@@ -1,20 +1,18 @@
 package com.mek.cuzdanimapp.presentation.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.presentation.auth.login.LoginEvent
 import com.mek.cuzdanimapp.presentation.auth.login.LoginScreen
 import com.mek.cuzdanimapp.presentation.auth.login.LoginViewModel
+import com.mek.cuzdanimapp.presentation.auth.register.RegisterEvent
 import com.mek.cuzdanimapp.presentation.auth.register.RegisterScreen
 import com.mek.cuzdanimapp.presentation.auth.register.RegisterViewModel
 import com.mek.cuzdanimapp.presentation.budget.BudgetScreen
@@ -32,7 +30,6 @@ import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentViewModel
 import com.mek.cuzdanimapp.presentation.recurring.RecurringPaymentsScreen
 import com.mek.cuzdanimapp.presentation.splash.SplashScreen
 import com.mek.cuzdanimapp.presentation.splash.SplashViewModel
-import com.mek.cuzdanimapp.presentation.transaction.TransactionEvent
 import com.mek.cuzdanimapp.presentation.transaction.TransactionViewModel
 import com.mek.cuzdanimapp.presentation.transaction.TransactionsScreen
 
@@ -57,49 +54,48 @@ fun AppNavGraph(
     // Global ViewModel — tüm ekranlardan erişilebilir
     val addTransactionViewModel: AddTransactionViewModel = viewModel()
 
-    // İşlem eklenince Dashboard'u yenile
-    LaunchedEffect(Unit) {
-        addTransactionViewModel.effect.collect { effect ->
-            if (effect is AddTransactionSheetEffect.TransactionAdded) {
-                // Dashboard açıksa yenile — ileride event bus ile yapılabilir
-                // Şimdilik bottom sheet kapanması yeterli
-            }
-        }
-    }
-
     val entries = navState.toEntries { route ->
         when (route) {
             is SplashRoute -> NavEntry(route) {
-                val viewModel: SplashViewModel = viewModel()
+                val splashViewModel: SplashViewModel = viewModel()
                 SplashScreen(
+                    onNavigateToDashboard = {
+                        navState.backStacks[SplashRoute]?.clear()
+                        navigator.navigate(DashboardRoute)
+                    },
+                    onNavigateToLogin = {
+                        navState.backStacks[SplashRoute]?.clear()
+                        navigator.navigate(LoginRoute)
+                    },
+                    viewModel = splashViewModel
+                )
+            }
+            is LoginRoute -> NavEntry(route) {
+                val loginViewModel: LoginViewModel = viewModel()
+                LaunchedEffect(Unit) {
+                    loginViewModel.onEvent(LoginEvent.ClearState)
+                }
+                LoginScreen(
+                    onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
+                    onNavigateToRegister = { navigator.navigate(RegisterRoute) },
+                    viewModel = loginViewModel
+                )
+            }
+
+            is RegisterRoute -> NavEntry(route) {
+                val viewModel: RegisterViewModel = viewModel()
+
+                LaunchedEffect(Unit) {
+                    viewModel.onEvent(RegisterEvent.ClearState)
+                }
+
+                RegisterScreen(
                     onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
                     onNavigateToLogin = { navigator.replaceAll(LoginRoute) },
                     viewModel = viewModel
                 )
             }
-            is LoginRoute -> NavEntry(route) {
-                val viewModel: LoginViewModel = viewModel()
 
-                LaunchedEffect(Unit) {
-                    viewModel.onEvent(LoginEvent.ClearState)
-                }
-
-                LoginScreen(
-                    onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
-                    onNavigateToRegister = { navigator.navigate(RegisterRoute) },
-                    viewModel = viewModel
-                )
-            }
-            is RegisterRoute -> NavEntry(route) {
-                val viewModel: RegisterViewModel = viewModel()
-                RegisterScreen(
-                    onNavigateToDashboard = { navigator.replaceAll(DashboardRoute) },
-                    onNavigateToLogin = {
-                        navigator.replaceAll(LoginRoute)
-                    },
-                    viewModel = viewModel
-                )
-            }
             is DashboardRoute -> NavEntry(route) {
                 val viewModel: DashboardViewModel = viewModel()
                 MainScreen(
@@ -109,9 +105,13 @@ fun AppNavGraph(
                         addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
                     }
                 ) {
-                    DashboardScreen(viewModel = viewModel)
+                    DashboardScreen(
+                        viewModel = viewModel,
+                        onNavigate = { route -> navigator.navigate(route) }
+                    )
                 }
             }
+
             is TransactionsRoute -> NavEntry(route) {
                 val viewModel: TransactionViewModel = viewModel()
                 MainScreen(
@@ -121,14 +121,23 @@ fun AppNavGraph(
                         addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
                     }
                 ) {
-                    TransactionsScreen(
-                        viewModel = viewModel,
-                        onTransactionAdded = {
-                            viewModel.onEvent(TransactionEvent.Refresh)
-                        }
-                    )
+                    TransactionsScreen(viewModel = viewModel)
                 }
             }
+
+            is RecurringRoute -> NavEntry(route) {
+                val viewModel: RecurringPaymentViewModel = viewModel()
+                MainScreen(
+                    currentRoute = navState.topLevelRoute,
+                    onNavigate = { navigator.navigate(it) },
+                    onAddTransaction = {
+                        addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
+                    }
+                ) {
+                    RecurringPaymentsScreen(viewModel = viewModel)
+                }
+            }
+
             is BudgetRoute -> NavEntry(route) {
                 val viewModel: BudgetViewModel = viewModel()
                 MainScreen(
@@ -141,6 +150,7 @@ fun AppNavGraph(
                     BudgetScreen(viewModel = viewModel)
                 }
             }
+
             is ProfileRoute -> NavEntry(route) {
                 val viewModel: ProfileViewModel = viewModel()
                 MainScreen(
@@ -157,28 +167,13 @@ fun AppNavGraph(
                 }
             }
 
-            is RecurringRoute -> NavEntry(route) {
-                val viewModel: RecurringPaymentViewModel = viewModel()
-                MainScreen(
-                    currentRoute = navState.topLevelRoute,
-                    onNavigate = { navigator.navigate(it) },
-                    onAddTransaction = {
-                        addTransactionViewModel.onEvent(AddTransactionSheetEvent.Show)
-                    }
-                ) {
-                    RecurringPaymentsScreen(viewModel = viewModel)
-                }
-            }
-            else -> NavEntry(route) { Text(stringResource(R.string.navigation_unknown_screen)) }
+            else -> NavEntry(route) { }
         }
     }
 
-    // Global bottom sheet — tüm ekranların üzerinde
     AddTransactionBottomSheet(
         viewModel = addTransactionViewModel,
-        onTransactionAdded = {
-            // Dashboard'daysa yenile
-        }
+        onTransactionAdded = { }
     )
 
     NavDisplay(

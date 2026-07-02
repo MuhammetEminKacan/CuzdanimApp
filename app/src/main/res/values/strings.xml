@@ -10,9 +10,7 @@
     <!-- Login -->
     <string name="login_welcome_back">Tekrar hoş geldiniz</string>
     <string name="login_subtitle">Hesabınıza güvenli giriş yapın.</string>
-    <string name="login_resend_verification">Doğrulama mailini tekrar gönder →</string>
     <string name="login_no_account">Hesabın yok mu?</string>
-    <string name="login_verification_resent">Doğrulama maili tekrar gönderildi!</string>
 
     <!-- Register -->
     <string name="register_title">Hesap Oluştur</string>
@@ -162,4 +160,42 @@
     <string name="language_dialog_title">Dil Seçin</string>
 
     <string name="cancel">İptal</string>
+
+    <string name="dashboard_no_upcoming_payments">Yaklaşan ödeme bulunmuyor</string>
+    <string name="dashboard_no_transactions">Henüz işlem bulunmuyor</string>
+
+    <string name="error_invalid_credentials">E-posta veya şifre hatalı.</string>
+    <string name="error_email_not_verified">E-posta adresiniz doğrulanmamış. Lütfen mailinizi kontrol ediniz.</string>
+    <string name="error_email_already_exists">Bu e-posta adresi zaten kullanılıyor.</string>
+    <string name="error_wrong_password">Mevcut şifreniz hatalı.</string>
+    <string name="error_generic">Bir hata oluştu. Lütfen tekrar deneyin.</string>
+    <string name="error_connection">Bağlantı hatası. İnternet bağlantınızı kontrol edin.</string>
+    <string name="error_account_delete_failed">Hesap silinemedi. Lütfen tekrar deneyin.</string>
+    <string name="error_password_change_failed">Şifre değiştirilemedi. Lütfen tekrar deneyin.</string>
+    <string name="error_register_failed">Kayıt olunamadı. Lütfen tekrar deneyin.</string>
+
+    <string name="error_fullname_empty">Ad soyad boş bırakılamaz.</string>
+    <string name="error_email_empty">E-posta boş bırakılamaz.</string>
+    <string name="error_password_short">Şifre en az 8 karakter olmalıdır.</string>
+    <string name="error_password_mismatch">Şifreler eşleşmiyor.</string>
+    <string name="error_password_empty">Şifre boş bırakılamaz.</string>
+    <string name="error_old_password_empty">Mevcut şifre boş bırakılamaz.</string>
+    <string name="error_new_password_empty">Yeni şifre boş bırakılamaz.</string>
+    <string name="error_delete_password_empty">Şifrenizi giriniz.</string>
+    <string name="error_profile_update_failed">Profil güncellenemedi. Lütfen tekrar deneyin.</string>
+
+    <string name="profile_title">Profil</string>
+    <string name="profile_edit">Profili Düzenle</string>
+    <string name="profile_change_password">Şifre Değiştir</string>
+    <string name="profile_current_password">Mevcut Şifre</string>
+    <string name="profile_new_password">Yeni Şifre</string>
+    <string name="profile_new_password_confirm">Yeni Şifre (Tekrar)</string>
+    <string name="profile_dark_mode">Karanlık Mod</string>
+    <string name="profile_logout">Çıkış Yap</string>
+    <string name="profile_delete_account">Hesabı Sil</string>
+    <string name="profile_delete_subtitle">Tüm verileriniz kalıcı olarak silinir</string>
+    <string name="profile_delete_warning">Bu işlem geri alınamaz. Tüm verileriniz (işlemler, bütçeler, düzenli ödemeler) kalıcı olarak silinecek.</string>
+    <string name="profile_enter_password">Şifrenizi girin</string>
+    <string name="profile_delete_permanently">Hesabımı Kalıcı Olarak Sil</string>
+    <string name="save">Kaydet</string>
 </resources>

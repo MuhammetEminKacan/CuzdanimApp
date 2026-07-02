@@ -50,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(Unit) {
                     tokenManager.logoutEvent.collect {
+                        kotlinx.coroutines.delay(300)
                         recreate()
                     }
                 }

@@ -42,21 +42,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavKey
 import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.DashboardData
 import com.mek.cuzdanimapp.domain.model.RecurringPayment
 import com.mek.cuzdanimapp.domain.model.Transaction
 import com.mek.cuzdanimapp.ui.theme.appColors
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel
+    viewModel: DashboardViewModel,
+    onNavigate: (NavKey) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -64,9 +66,8 @@ fun DashboardScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
-                is DashboardEffect.ShowError -> {
-                    snackbarHostState.showSnackbar(effect.message)
-                }
+                is DashboardEffect.ShowError -> snackbarHostState.showSnackbar(effect.message)
+                is DashboardEffect.NavigateTo -> onNavigate(effect.route)
             }
         }
     }
@@ -84,18 +85,19 @@ fun DashboardScreen(
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             } else {
-                state.dashboardData?.let { data ->
-                    DashboardContent(data = data)
-                }
+                DashboardContent(
+                    data = state.dashboardData,
+                    onEvent = { viewModel.onEvent(it) }
+                )
             }
         }
 
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
-        ) { data ->
+        ) { snackbarData ->
             Snackbar(
-                snackbarData = data,
+                snackbarData = snackbarData,
                 containerColor = MaterialTheme.colorScheme.errorContainer,
                 contentColor = MaterialTheme.colorScheme.onErrorContainer
             )
@@ -104,36 +106,79 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun DashboardContent(data: DashboardData) {
+private fun DashboardContent(
+    data: DashboardData?,
+    onEvent: (DashboardEvent) -> Unit
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Balance Card
-        item { BalanceCard(data = data) }
+        // Balance Card — her zaman göster
+        item {
+            BalanceCard(data = data)
+        }
 
-        // Upcoming Payments
-        if (data.upcomingPayments.isNotEmpty()) {
+        // Yaklaşan Ödemeler — her zaman başlık göster
+        item {
+            SectionHeader(
+                title = stringResource(R.string.dashboard_upcoming_payments),
+                onSeeAll = { onEvent(DashboardEvent.OnSeeAllPaymentsClicked) }
+            )
+        }
+
+        val upcomingPayments = data?.upcomingPayments ?: emptyList()
+        if (upcomingPayments.isEmpty()) {
             item {
-                SectionHeader(title = stringResource(R.string.dashboard_upcoming_payments), onSeeAll = {})
-            }
-            item {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    items(data.upcomingPayments) { payment ->
+                    Text(
+                        text = stringResource(R.string.dashboard_no_upcoming_payments),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        } else {
+            item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(upcomingPayments) { payment ->
                         UpcomingPaymentCard(payment = payment)
                     }
                 }
             }
         }
 
-        // Recent Transactions
-        if (data.recentTransactions.isNotEmpty()) {
+        // Son İşlemler — her zaman başlık göster
+        item {
+            SectionHeader(
+                title = stringResource(R.string.dashboard_recent_transactions),
+                onSeeAll = { onEvent(DashboardEvent.OnSeeAllTransactionsClicked) }
+            )
+        }
+
+        val recentTransactions = data?.recentTransactions ?: emptyList()
+        if (recentTransactions.isEmpty()) {
             item {
-                SectionHeader(title = stringResource(R.string.dashboard_recent_transactions), onSeeAll = {})
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(R.string.dashboard_no_transactions),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
+                }
             }
+        } else {
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
@@ -143,7 +188,7 @@ private fun DashboardContent(data: DashboardData) {
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column {
-                        data.recentTransactions.forEach { transaction ->
+                        recentTransactions.forEach { transaction ->
                             TransactionItem(transaction = transaction)
                         }
                     }
@@ -154,7 +199,10 @@ private fun DashboardContent(data: DashboardData) {
 }
 
 @Composable
-private fun BalanceCard(data: DashboardData) {
+private fun BalanceCard(data: DashboardData?) {
+    val contentColor = MaterialTheme.colorScheme.onPrimary
+    val contentColorAlpha = contentColor.copy(alpha = 0.7f)
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -163,7 +211,7 @@ private fun BalanceCard(data: DashboardData) {
                 brush = Brush.linearGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.primary,
-                        MaterialTheme.colorScheme.secondary
+                        MaterialTheme.colorScheme.primaryContainer
                     )
                 )
             )
@@ -173,14 +221,17 @@ private fun BalanceCard(data: DashboardData) {
             Text(
                 text = stringResource(R.string.dashboard_total_balance),
                 fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.7f)
+                color = contentColorAlpha
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.totalBalance)),
+                text = stringResource(
+                    R.string.dashboard_amount_format,
+                    String.format(Locale.US, "%.2f", data?.totalBalance ?: 0.0)
+                ),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = contentColor
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -189,7 +240,6 @@ private fun BalanceCard(data: DashboardData) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Gelir
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -198,13 +248,13 @@ private fun BalanceCard(data: DashboardData) {
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.appColors.income.copy(alpha = 0.2f)),
+                            .background(contentColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowDownward,
                             contentDescription = null,
-                            tint = MaterialTheme.appColors.income,
+                            tint = contentColor,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -212,18 +262,20 @@ private fun BalanceCard(data: DashboardData) {
                         Text(
                             text = stringResource(R.string.dashboard_income_label),
                             fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = contentColorAlpha
                         )
                         Text(
-                            text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.monthlyIncome)),
+                            text = stringResource(
+                                R.string.dashboard_amount_format,
+                                String.format(Locale.US, "%.2f", data?.monthlyIncome ?: 0.0)
+                            ),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White
+                            color = contentColor
                         )
                     }
                 }
 
-                // Gider
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -232,13 +284,13 @@ private fun BalanceCard(data: DashboardData) {
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.appColors.expense.copy(alpha = 0.2f)),
+                            .background(contentColor.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ArrowUpward,
                             contentDescription = null,
-                            tint = MaterialTheme.appColors.expense,
+                            tint = contentColor,
                             modifier = Modifier.size(16.dp)
                         )
                     }
@@ -246,13 +298,16 @@ private fun BalanceCard(data: DashboardData) {
                         Text(
                             text = stringResource(R.string.dashboard_expense_label),
                             fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.7f)
+                            color = contentColorAlpha
                         )
                         Text(
-                            text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", data.monthlyExpense)),
+                            text = stringResource(
+                                R.string.dashboard_amount_format,
+                                String.format(Locale.US, "%.2f", data?.monthlyExpense ?: 0.0)
+                            ),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Color.White
+                            color = contentColor
                         )
                     }
                 }
@@ -289,6 +344,9 @@ private fun SectionHeader(
 
 @Composable
 private fun UpcomingPaymentCard(payment: RecurringPayment) {
+    val localizedFrequency = getLocalizedFrequency(payment.frequency)
+    val displayTitle = getLocalizedCategory(payment.title)
+
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(16.dp),
@@ -309,7 +367,7 @@ private fun UpcomingPaymentCard(payment: RecurringPayment) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = payment.title.first().toString(),
+                    text = displayTitle.firstOrNull()?.toString() ?: "",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -317,20 +375,23 @@ private fun UpcomingPaymentCard(payment: RecurringPayment) {
             }
 
             Text(
-                text = payment.title,
+                text = displayTitle,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = payment.frequency,
+                text = localizedFrequency,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = stringResource(R.string.dashboard_amount_format, String.format("%.2f", payment.amount)),
+                text = stringResource(
+                    R.string.dashboard_amount_format,
+                    String.format(Locale.US, "%.2f", payment.amount)
+                ),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
@@ -341,7 +402,12 @@ private fun UpcomingPaymentCard(payment: RecurringPayment) {
 
 @Composable
 private fun TransactionItem(transaction: Transaction) {
-    val isIncome = transaction.type == "INCOME"
+    val type = transaction.type.trim()
+    val isIncome = type.equals("INCOME", ignoreCase = true) ||
+            type.equals("GELİR", ignoreCase = true) ||
+            type.equals("GELIR", ignoreCase = true)
+
+    val localizedCategory = getLocalizedCategory(transaction.category)
 
     Row(
         modifier = Modifier
@@ -362,7 +428,7 @@ private fun TransactionItem(transaction: Transaction) {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = transaction.category.first().toString(),
+                    text = localizedCategory.firstOrNull()?.toString() ?: "",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -371,7 +437,7 @@ private fun TransactionItem(transaction: Transaction) {
 
             Column {
                 Text(
-                    text = transaction.category,
+                    text = localizedCategory,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -386,12 +452,55 @@ private fun TransactionItem(transaction: Transaction) {
 
         Text(
             text = stringResource(
-                if (isIncome) R.string.dashboard_income_format else R.string.dashboard_expense_format,
-                String.format("%.2f", transaction.amount)
+                if (isIncome) R.string.dashboard_income_format
+                else R.string.dashboard_expense_format,
+                String.format(Locale.US, "%.2f", transaction.amount)
             ),
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = if (isIncome) MaterialTheme.appColors.income else MaterialTheme.appColors.expense
         )
+    }
+}
+
+@Composable
+private fun getLocalizedCategory(category: String): String {
+    val c = category.trim()
+    fun match(vararg words: String) = words.any { it.equals(c, ignoreCase = true) }
+
+    return when {
+        match("INCOME", "GELİR", "GELIR") -> stringResource(R.string.transaction_type_income)
+        match("EXPENSE", "GİDER", "GIDER") -> stringResource(R.string.transaction_type_expense)
+        match("SALARY", "MAAŞ", "MAAS") -> stringResource(R.string.category_salary)
+        match("FREELANCE") -> stringResource(R.string.category_freelance)
+        match("INVESTMENT", "YATIRIM") -> stringResource(R.string.category_investment)
+        match("SCHOLARSHIP", "BURS") -> stringResource(R.string.category_scholarship)
+        match("BONUS", "PRİM", "PRIM") -> stringResource(R.string.category_bonus)
+        match("GROCERIES", "MARKET") -> stringResource(R.string.category_groceries)
+        match("FOOD", "YEMEK") -> stringResource(R.string.category_food)
+        match("TRANSPORTATION", "ULAŞIM", "ULASIM") -> stringResource(R.string.category_transportation)
+        match("FUEL", "YAKIT") -> stringResource(R.string.category_fuel)
+        match("HEALTH", "SAĞLIK", "SAGLIK") -> stringResource(R.string.category_health)
+        match("EDUCATION", "EĞİTİM", "EGITIM") -> stringResource(R.string.category_education)
+        match("ENTERTAINMENT", "EĞLENCE", "EGLENCE") -> stringResource(R.string.category_entertainment)
+        match("RENT", "KİRA", "KIRA") -> stringResource(R.string.category_rent)
+        match("BILLS", "FATURA") -> stringResource(R.string.category_bills)
+        match("SHOPPING", "ALIŞVERİŞ", "ALISVERIS") -> stringResource(R.string.category_shopping)
+        match("OTHER", "DİĞER", "DIGER") -> stringResource(R.string.category_other)
+        else -> category
+    }
+}
+
+@Composable
+private fun getLocalizedFrequency(frequency: String): String {
+    val f = frequency.trim()
+    fun match(vararg words: String) = words.any { it.equals(f, ignoreCase = true) }
+
+    return when {
+        match("DAILY", "GÜNLÜK", "GUNLUK") -> stringResource(R.string.frequency_daily)
+        match("WEEKLY", "HAFTALIK") -> stringResource(R.string.frequency_weekly)
+        match("MONTHLY", "AYLIK") -> stringResource(R.string.frequency_monthly)
+        match("YEARLY", "YILLIK") -> stringResource(R.string.frequency_yearly)
+        else -> frequency
     }
 }

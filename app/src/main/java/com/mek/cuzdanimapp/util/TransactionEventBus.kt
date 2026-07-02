@@ -18,5 +18,6 @@ class TransactionEventBus @Inject constructor() {
     sealed class TransactionEvent {
         data object TransactionAdded : TransactionEvent()
         data object TransactionDeleted : TransactionEvent()
+        data object RecurringPaymentAdded : TransactionEvent()
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
@@ -33,6 +34,7 @@ fun MainScreen(
     Scaffold(
         bottomBar = {
             NavigationBar(
+                modifier = Modifier.shadow(8.dp), // Alt menünün sayfadan ayrışması için gölge eklendi
                 containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 0.dp
             ) {
@@ -55,11 +57,11 @@ fun MainScreen(
                             )
                         },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            unselectedTextColor = MaterialTheme.colorScheme.surfaceContainerLow
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
