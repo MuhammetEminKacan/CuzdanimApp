@@ -199,4 +199,16 @@
     <string name="profile_enter_password">Enter your password</string>
     <string name="profile_delete_permanently">Delete My Account Permanently</string>
     <string name="save">Save</string>
+    <string name="error_category_empty">Please select a category.</string>
+    <string name="error_invalid_limit">Please enter a valid limit.</string>
+    <string name="budget_title">Budgets</string>
+    <string name="budget_add">Add Budget</string>
+    <string name="budget_edit">Edit Budget</string>
+    <string name="budget_category">Category</string>
+    <string name="budget_monthly_limit">Monthly Limit</string>
+    <string name="budget_empty">No budgets added yet</string>
+    <string name="budget_spent">Spent</string>
+    <string name="budget_limit">Limit</string>
+    <string name="budget_remaining">Remaining</string>
+    <string name="budget_warning_high">You\'ve used %d%% of your budget</string>
 </resources>

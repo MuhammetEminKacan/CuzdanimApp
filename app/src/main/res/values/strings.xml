@@ -198,4 +198,17 @@
     <string name="profile_enter_password">Şifrenizi girin</string>
     <string name="profile_delete_permanently">Hesabımı Kalıcı Olarak Sil</string>
     <string name="save">Kaydet</string>
+    <string name="error_category_empty">Kategori seçiniz.</string>
+    <string name="error_invalid_limit">Geçerli bir limit giriniz.</string>
+
+    <string name="budget_title">Bütçeler</string>
+    <string name="budget_add">Bütçe Ekle</string>
+    <string name="budget_edit">Bütçeyi Düzenle</string>
+    <string name="budget_category">Kategori</string>
+    <string name="budget_monthly_limit">Aylık Limit (₺)</string>
+    <string name="budget_empty">Henüz bütçe eklenmedi</string>
+    <string name="budget_spent">Harcanan</string>
+    <string name="budget_limit">Limit</string>
+    <string name="budget_remaining">Kalan</string>
+    <string name="budget_warning_high">Bütçenizin %%%d\'ini kullandınız</string>
 </resources>
