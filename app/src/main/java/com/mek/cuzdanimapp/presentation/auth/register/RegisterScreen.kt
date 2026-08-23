@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,7 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -48,15 +50,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.mek.cuzdanimapp.R
 import com.mek.cuzdanimapp.domain.model.CurrencyType
+import com.mek.cuzdanimapp.util.LegalUrls
 
 @Composable
 fun RegisterScreen(
@@ -64,7 +72,7 @@ fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     viewModel: RegisterViewModel
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val verificationSentMessage = stringResource(R.string.register_verification_sent)
@@ -306,6 +314,42 @@ fun RegisterScreen(
                     }
                 }
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Checkbox(
+                        checked = state.isPrivacyConsentChecked,
+                        onCheckedChange = { viewModel.onEvent(RegisterEvent.TogglePrivacyConsent) },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    val linkStyles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    val consentText = buildAnnotatedString {
+                        append(stringResource(R.string.register_privacy_consent_prefix))
+                        withLink(LinkAnnotation.Url(LegalUrls.PRIVACY_POLICY, linkStyles)) {
+                            append(stringResource(R.string.register_privacy_policy_link))
+                        }
+                        append(stringResource(R.string.register_privacy_consent_and))
+                        withLink(LinkAnnotation.Url(LegalUrls.TERMS_OF_SERVICE, linkStyles)) {
+                            append(stringResource(R.string.register_terms_link))
+                        }
+                        append(stringResource(R.string.register_privacy_consent_suffix))
+                    }
+                    Text(
+                        text = consentText,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
                 if (errorText != null) {
                     Text(
                         text = errorText,
@@ -394,6 +438,7 @@ private fun registerErrorMessage(code: String?): String? {
         "LOCAL_PASSWORD_EMPTY" -> stringResource(R.string.error_password_empty)
         "LOCAL_PASSWORD_SHORT" -> stringResource(R.string.error_password_short)
         "LOCAL_PASSWORD_MISMATCH" -> stringResource(R.string.error_password_mismatch)
+        "LOCAL_PRIVACY_NOT_ACCEPTED" -> stringResource(R.string.error_privacy_not_accepted)
         "CONNECTION_ERROR" -> stringResource(R.string.error_connection)
         null -> null
         else -> stringResource(R.string.error_register_failed)

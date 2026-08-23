@@ -21,6 +21,11 @@
     <string name="register_currency_label">Currency</string>
     <string name="register_have_account">Already have an account?</string>
     <string name="register_verification_sent">Verification email sent! Please verify your email before logging in.</string>
+    <string name="register_privacy_consent_prefix">I have read and agree to the </string>
+    <string name="register_privacy_policy_link">Privacy Policy</string>
+    <string name="register_privacy_consent_and"> and the </string>
+    <string name="register_terms_link">Terms of Service</string>
+    <string name="register_privacy_consent_suffix">.</string>
 
     <string name="budget_screen_title">Budgets</string>
     <string name="budget_empty_message">No budgets added yet</string>
@@ -179,6 +184,7 @@
     <string name="error_email_empty">Email cannot be empty.</string>
     <string name="error_password_short">Password must be at least 8 characters.</string>
     <string name="error_password_mismatch">Passwords do not match.</string>
+    <string name="error_privacy_not_accepted">You must accept the Privacy Policy and Terms of Service to continue.</string>
     <string name="error_password_empty">Password cannot be empty.</string>
     <string name="error_old_password_empty">Current password cannot be empty.</string>
     <string name="error_new_password_empty">New password cannot be empty.</string>

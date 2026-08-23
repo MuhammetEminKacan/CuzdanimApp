@@ -1,5 +1,9 @@
 package com.mek.cuzdanimapp.presentation.navigation
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -177,6 +181,21 @@ fun AppNavGraph(
 
     NavDisplay(
         entries = entries,
-        onBack = { navigator.goBack() }
+        onBack = { navigator.goBack() },
+        transitionSpec = {
+            ContentTransform(
+                fadeIn(animationSpec = tween(NAV_TRANSITION_DURATION_MS)),
+                fadeOut(animationSpec = tween(NAV_TRANSITION_DURATION_MS))
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                fadeIn(animationSpec = tween(NAV_TRANSITION_DURATION_MS)),
+                fadeOut(animationSpec = tween(NAV_TRANSITION_DURATION_MS))
+            )
+        }
     )
 }
+
+// Navigation3 varsayılanı 700ms; jank hissini gidermek için kısaltıldı.
+private const val NAV_TRANSITION_DURATION_MS = 200

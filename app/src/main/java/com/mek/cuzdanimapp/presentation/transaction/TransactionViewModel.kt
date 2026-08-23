@@ -31,6 +31,19 @@ class TransactionViewModel @Inject constructor(
 
     init {
         onEvent(TransactionEvent.LoadTransactions)
+        observeTransactionEvents()
+    }
+
+    private fun observeTransactionEvents() {
+        viewModelScope.launch {
+            transactionEventBus.events.collect { event ->
+                when (event) {
+                    is TransactionEventBus.TransactionEvent.TransactionAdded,
+                    is TransactionEventBus.TransactionEvent.TransactionDeleted -> loadTransactions()
+                    is TransactionEventBus.TransactionEvent.RecurringPaymentAdded -> Unit
+                }
+            }
+        }
     }
 
     fun onEvent(event: TransactionEvent) {

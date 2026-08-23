@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     lateinit var languagePreferences: LanguagePreferences
 
     override fun attachBaseContext(newBase: Context) {
-        val languageCode = LocaleHelper.getSavedLanguageBlocking(newBase)
+        val languageCode = LocaleHelper.getSavedLanguage(newBase)
         val context = LocaleHelper.wrapContext(newBase, languageCode)
         super.attachBaseContext(context)
     }
@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val isDarkMode by themePreferences.isDarkMode.collectAsState(initial = false)
+            val isDarkMode by themePreferences.isDarkMode.collectAsStateWithLifecycle(initialValue = false)
 
             CuzdanimAppTheme(darkTheme = isDarkMode) {
                 val navState = remember { mutableStateOf<NavigationState?>(null) }

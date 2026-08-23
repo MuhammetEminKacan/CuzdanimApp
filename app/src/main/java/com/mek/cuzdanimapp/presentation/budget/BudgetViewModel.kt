@@ -7,6 +7,7 @@ import com.mek.cuzdanimapp.domain.usecase.budget.DeleteBudgetUseCase
 import com.mek.cuzdanimapp.domain.usecase.budget.GetAllBudgetsUseCase
 import com.mek.cuzdanimapp.domain.usecase.budget.UpdateBudgetUseCase
 import com.mek.cuzdanimapp.util.Resource
+import com.mek.cuzdanimapp.util.TransactionEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,8 @@ class BudgetViewModel @Inject constructor(
     private val getAllBudgetsUseCase: GetAllBudgetsUseCase,
     private val createBudgetUseCase: CreateBudgetUseCase,
     private val updateBudgetUseCase: UpdateBudgetUseCase,
-    private val deleteBudgetUseCase: DeleteBudgetUseCase
+    private val deleteBudgetUseCase: DeleteBudgetUseCase,
+    private val transactionEventBus: TransactionEventBus
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BudgetState())
@@ -33,6 +35,19 @@ class BudgetViewModel @Inject constructor(
 
     init {
         onEvent(BudgetEvent.Load)
+        observeTransactionEvents()
+    }
+
+    private fun observeTransactionEvents() {
+        viewModelScope.launch {
+            transactionEventBus.events.collect { event ->
+                when (event) {
+                    is TransactionEventBus.TransactionEvent.TransactionAdded,
+                    is TransactionEventBus.TransactionEvent.TransactionDeleted -> load()
+                    is TransactionEventBus.TransactionEvent.RecurringPaymentAdded -> Unit
+                }
+            }
+        }
     }
 
     fun onEvent(event: BudgetEvent) {

@@ -1,6 +1,7 @@
 package com.mek.cuzdanimapp.data.local
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -22,6 +23,11 @@ class LanguagePreferences @Inject constructor(
         .map { preferences -> preferences[languageKey] }
 
     suspend fun setLanguage(code: String?) {
+        // Senkron kopya: Activity.attachBaseContext() suspend olamadığı için
+        // uygulama açılışında dili DataStore yerine buradan hızlıca okuyoruz.
+        context.getSharedPreferences(SYNC_PREFS_NAME, Context.MODE_PRIVATE).edit {
+            if (code == null) remove(SYNC_KEY) else putString(SYNC_KEY, code)
+        }
         context.languageDataStore.edit { preferences ->
             if (code == null) {
                 preferences.remove(languageKey)
@@ -29,5 +35,14 @@ class LanguagePreferences @Inject constructor(
                 preferences[languageKey] = code
             }
         }
+    }
+
+    companion object {
+        private const val SYNC_PREFS_NAME = "language_prefs_sync"
+        private const val SYNC_KEY = "language_code"
+
+        fun getSavedLanguageSync(context: Context): String? =
+            context.getSharedPreferences(SYNC_PREFS_NAME, Context.MODE_PRIVATE)
+                .getString(SYNC_KEY, null)
     }
 }
