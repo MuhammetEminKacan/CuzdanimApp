@@ -48,6 +48,9 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.ToggleConfirmPasswordVisibility -> {
                 _state.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
             }
+            is RegisterEvent.TogglePrivacyConsent -> {
+                _state.update { it.copy(isPrivacyConsentChecked = !it.isPrivacyConsentChecked, errorCode = null) }
+            }
             is RegisterEvent.RegisterClicked -> register()
             is RegisterEvent.NavigateToLogin -> {
                 viewModelScope.launch {
@@ -81,6 +84,10 @@ class RegisterViewModel @Inject constructor(
         }
         if (state.password != state.confirmPassword) {
             _state.update { it.copy(errorCode = "LOCAL_PASSWORD_MISMATCH") }
+            return
+        }
+        if (!state.isPrivacyConsentChecked) {
+            _state.update { it.copy(errorCode = "LOCAL_PRIVACY_NOT_ACCEPTED") }
             return
         }
 

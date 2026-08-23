@@ -19,3 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Gson deserializes DTOs by matching field names against the backend's JSON keys
+# (no @SerializedName annotations are used), so field names must survive obfuscation.
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.mek.cuzdanimapp.data.remote.dto.** { *; }
+-dontwarn sun.misc.**

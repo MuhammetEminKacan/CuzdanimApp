@@ -10,6 +10,7 @@ sealed class RegisterEvent {
     data class CurrencySelected(val currency: CurrencyType) : RegisterEvent()
     data object TogglePasswordVisibility : RegisterEvent()
     data object ToggleConfirmPasswordVisibility : RegisterEvent()
+    data object TogglePrivacyConsent : RegisterEvent()
     data object RegisterClicked : RegisterEvent()
     data object NavigateToLogin : RegisterEvent()
     data object ClearState : RegisterEvent()

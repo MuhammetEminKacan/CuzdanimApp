@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.google.services)
 }
 
+val localProps = org.jetbrains.kotlin.konan.properties.Properties()
+localProps.load(rootProject.file("local.properties").inputStream())
+
 android {
     namespace = "com.mek.cuzdanimapp"
     compileSdk = 37
@@ -19,14 +22,23 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val localProps = org.jetbrains.kotlin.konan.properties.Properties()
-        localProps.load(rootProject.file("local.properties").inputStream())
         buildConfigField("String", "BASE_URL", "\"${localProps.getProperty("BASE_URL")}\"")
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(localProps.getProperty("RELEASE_STORE_FILE"))
+            storePassword = localProps.getProperty("RELEASE_STORE_PASSWORD")
+            keyAlias = localProps.getProperty("RELEASE_KEY_ALIAS")
+            keyPassword = localProps.getProperty("RELEASE_KEY_PASSWORD")
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -63,6 +75,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp)

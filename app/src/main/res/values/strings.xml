@@ -20,6 +20,11 @@
     <string name="register_currency_label">Para Birimi</string>
     <string name="register_have_account">Zaten hesabın var mı?</string>
     <string name="register_verification_sent">Doğrulama maili gönderildi! Mailinizi onayladıktan sonra giriş yapabilirsiniz.</string>
+    <string name="register_privacy_consent_prefix"></string>
+    <string name="register_privacy_policy_link">Gizlilik Politikası</string>
+    <string name="register_privacy_consent_and">\'nı ve </string>
+    <string name="register_terms_link">Kullanım Şartları</string>
+    <string name="register_privacy_consent_suffix">\'nı okudum, kabul ediyorum.</string>
 
     <string name="budget_screen_title">Bütçeler</string>
     <string name="budget_empty_message">Henüz bütçe eklenmedi</string>
@@ -178,6 +183,7 @@
     <string name="error_email_empty">E-posta boş bırakılamaz.</string>
     <string name="error_password_short">Şifre en az 8 karakter olmalıdır.</string>
     <string name="error_password_mismatch">Şifreler eşleşmiyor.</string>
+    <string name="error_privacy_not_accepted">Devam etmek için Gizlilik Politikası ve Kullanım Şartlarını kabul etmelisiniz.</string>
     <string name="error_password_empty">Şifre boş bırakılamaz.</string>
     <string name="error_old_password_empty">Mevcut şifre boş bırakılamaz.</string>
     <string name="error_new_password_empty">Yeni şifre boş bırakılamaz.</string>
