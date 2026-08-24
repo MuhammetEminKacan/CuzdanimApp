@@ -5,4 +5,5 @@ object LegalUrls {
     const val PRIVACY_POLICY = "$BASE/#gizlilik-politikasi"
     const val TERMS_OF_SERVICE = "$BASE/#kullanim-sartlari"
     const val ACCOUNT_DELETION = "$BASE/#hesap-silme"
+    const val DATA_DELETION = "$BASE/#veri-silme"
 }
