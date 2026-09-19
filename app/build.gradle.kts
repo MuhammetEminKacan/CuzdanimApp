@@ -18,8 +18,8 @@ android {
         applicationId = "com.mek.cuzdanimapp"
         minSdk = 28
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BASE_URL", "\"${localProps.getProperty("BASE_URL")}\"")
@@ -52,6 +52,15 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    bundle {
+        language {
+            // AAB dil kaynaklarini cihaz diline gore bolmesin. Bolunurse Play
+            // yalnizca sistem dilinin stringlerini indirir ve uygulama ici dil
+            // secici diger dile gecemez (varsayilana duser).
+            enableSplit = false
+        }
     }
 }
 
