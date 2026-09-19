@@ -1,5 +1,6 @@
 package com.mek.cuzdanimapp.presentation.profile
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -102,7 +103,11 @@ fun ProfileScreen(
                 is ProfileEffect.AccountDeleted -> onLoggedOut()
                 is ProfileEffect.LoggedOut -> onLoggedOut()
                 is ProfileEffect.LanguageChanged -> {
-                    context.findActivity()?.recreate()
+                    // Android 13+'ta sistem Activity'yi per-app language değişiminde
+                    // kendisi yeniden yaratıyor; altındaki sürümlerde biz tetikliyoruz.
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        context.findActivity()?.recreate()
+                    }
                 }
             }
         }

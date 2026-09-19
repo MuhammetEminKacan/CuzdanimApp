@@ -8,8 +8,14 @@ import java.util.Locale
 
 object LocaleHelper {
 
+    /**
+     * Aktif dil kodu. Android 13+'ta sistemin per-app language kaydı (LocaleManager)
+     * asıl kaynaktır; daha eski sürümlerde AppCompat'ın deposu boş kalabildiği için
+     * senkron SharedPreferences kopyasına düşeriz.
+     */
     fun getSavedLanguage(context: Context): String? {
-        return LanguagePreferences.getSavedLanguageSync(context)
+        return LanguagePreferences.getAppliedLanguage()
+            ?: LanguagePreferences.getSavedLanguageSync(context)
     }
 
     fun wrapContext(context: Context, languageCode: String?): Context {
